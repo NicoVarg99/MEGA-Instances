@@ -51,7 +51,7 @@ function frun
 		
 		
 		
-		echo "[Desktop Entry]" >> .config/autostart/mega_instances.desktop
+		echo "[Desktop Entry]" > .config/autostart/mega_instances.desktop
 		echo "Type=Application" >> .config/autostart/mega_instances.desktop
 		echo "Exec=/home/$USER/MEGA/mega_instances.sh" >> .config/autostart/mega_instances.desktop
 		echo "Name=megasync_instances" >> .config/autostart/mega_instances.desktop
