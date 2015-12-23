@@ -11,7 +11,7 @@ function finstall
 
 function frun
 {
-	FILE=$(xdg-user-dir)/MEGA/.ok
+	FILE=/home/$USER/MEGA/.ok
 
 	if [ -f $FILE ];
 	then
@@ -45,9 +45,9 @@ function frun
 		done
 
 		zenity --warning --text="Will now launch all the instances. They also will start ed every startup."
-		touch $(xdg-user-dir)/MEGA/.ok
-		cp $0 $(xdg-user-dir)/MEGA/mega_instances.sh
-		bash $(xdg-user-dir)/MEGA/mega_instances.sh
+		touch /home/$USER/MEGA/.ok
+		cp $0 /home/$USER/MEGA/mega_instances.sh
+		bash /home/$USER/MEGA/mega_instances.sh
 	fi
 }
 
