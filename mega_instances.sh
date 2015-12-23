@@ -17,7 +17,7 @@ function frun
 	then
 		echo "File $FILE exists. Will now launch the instances."
 
-		for d in $(xdg-user-dir)/MEGA/*/ ; do
+		for d in /home/$USER/MEGA/*/ ; do
 			echo "$d"
 			HOME=$d
 			megasync 2> /dev/null &
@@ -27,20 +27,20 @@ function frun
 	  	echo "File $FILE does not exist. Will now start the configuration."
 
 		INSTNUM=`zenity --entry --text="How many MEGA instances do you need?"`
-		mkdir $(xdg-user-dir)/MEGA
+		mkdir /home/$USER/MEGA
 
 
 		for (( i=1; i<=INSTNUM; i++ ))
 		do
 			NAME=`zenity --entry --text="Insert the name for instance $i/$INSTNUM"`
 			ARRAY[$i]=$NAME	
-			mkdir $(xdg-user-dir)/MEGA/$NAME
+			mkdir /home/$USER/MEGA/$NAME
 		done
 
 		for (( i=1; i<=INSTNUM; i++ ))
 		do
 			zenity --warning --text="Instance ${ARRAY[i]} ($i/$INSTNUM). Close it after the configuration."
-			HOME=$(xdg-user-dir)/MEGA/${ARRAY[$i]}
+			HOME=/home/$USER/MEGA/${ARRAY[$i]}
 			megasync
 		done
 
