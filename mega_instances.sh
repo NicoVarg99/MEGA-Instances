@@ -64,6 +64,7 @@ function frun
 		zenity --warning --text="Will now launch all the instances. They will also start ed every startup."
 		touch /home/$USER/MEGA/.ok
 		cp $0 /home/$USER/MEGA/mega_instances.sh
+		chmod +x /home/$USER/MEGA/mega_instances.sh
 		bash /home/$USER/MEGA/mega_instances.sh
 	fi
 }
