@@ -43,8 +43,25 @@ function frun
 			HOME=/home/$USER/MEGA/${ARRAY[$i]}
 			megasync
 		done
+		
+		
+		
+		
+		mkdir /home/$USER/.config/autostart
+		
+		
+		
+		echo "[Desktop Entry]" >> .config/autostart/mega_instances.desktop
+		echo "Type=Application" >> .config/autostart/mega_instances.desktop
+		echo "Exec=/home/$USER/MEGA/mega_instances.sh" >> .config/autostart/mega_instances.desktop
+		echo "Name=megasync_instances" >> .config/autostart/mega_instances.desktop
+		echo "Comment=Open all the MEGA instances"  >> .config/autostart/mega_instances.desktop
+		chmod +x .config/autostart/mega_instances.desktop
 
-		zenity --warning --text="Will now launch all the instances. They also will start ed every startup."
+		
+		
+		
+		zenity --warning --text="Will now launch all the instances. They will also start ed every startup."
 		touch /home/$USER/MEGA/.ok
 		cp $0 /home/$USER/MEGA/mega_instances.sh
 		bash /home/$USER/MEGA/mega_instances.sh
@@ -54,7 +71,7 @@ function frun
 
 if [ -f /usr/bin/megasync ];
 then
-frun
+	frun
 else
-finstall
+	finstall
 fi
