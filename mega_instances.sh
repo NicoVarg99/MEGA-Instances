@@ -39,7 +39,7 @@ function frun
 
 		for (( i=1; i<=INSTNUM; i++ ))
 		do
-			zenity --warning --text="Instance $ARRAY[$i] ($i/$INSTNUM). Close it after the configuration."
+			zenity --warning --text="Instance $ARRAY[i] ($i/$INSTNUM). Close it after the configuration."
 			HOME=$(xdg-user-dir)/MEGA/$ARRAY[$i]
 			megasync
 		done
