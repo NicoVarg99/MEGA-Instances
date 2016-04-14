@@ -27,14 +27,14 @@ function frun
 	  	echo "File $FILE does not exist. Will now start the configuration."
 
 		INSTNUM=`zenity --entry --text="How many MEGA instances do you need?"`
-		mkdir /home/$USER/MEGA
+		mkdir -p /home/$USER/MEGA
 
 
 		for (( i=1; i<=INSTNUM; i++ ))
 		do
 			NAME=`zenity --entry --text="Insert the name for instance $i/$INSTNUM"`
 			ARRAY[$i]=$NAME	
-			mkdir /home/$USER/MEGA/$NAME
+			mkdir -p /home/$USER/MEGA/$NAME
 		done
 
 		for (( i=1; i<=INSTNUM; i++ ))
@@ -47,7 +47,7 @@ function frun
 		
 		
 		
-		mkdir /home/$USER/.config/autostart
+		mkdir -p /home/$USER/.config/autostart
 		
 		
 		
