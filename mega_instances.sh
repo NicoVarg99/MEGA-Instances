@@ -2,6 +2,11 @@
 
 function finstall
 {
+	if [[ `whereis zenity` == "zenity:" ]];
+	then
+	sudo apt-get install zenity
+	fi
+
 	wget https://mega.nz/linux/MEGAsync/xUbuntu_15.10/amd64/megasync-xUbuntu_15.10_amd64.deb
 	sudo dpkg -i megasync-xUbuntu_15.10_amd64.deb
 	sudo rm megasync-xUbuntu_15.10_amd64.deb
