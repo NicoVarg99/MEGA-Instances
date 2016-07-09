@@ -2,15 +2,35 @@
 
 function finstall
 {
-	if [[ `whereis zenity` == "zenity:" ]];
-	then
-	sudo apt-get install zenity
-	fi
-
-	wget https://mega.nz/linux/MEGAsync/xUbuntu_15.10/amd64/megasync-xUbuntu_15.10_amd64.deb
-	sudo dpkg -i megasync-xUbuntu_15.10_amd64.deb
-	sudo rm megasync-xUbuntu_15.10_amd64.deb
-	sudo apt-get -y --force-yes -f install
+	if [ -f "/etc/arch-release" ]; then
+  		#arch
+  		if [[ `whereis zenity` == "zenity:" ]];
+		then
+			sudo pacman -S zenity
+		fi
+		if [[ `whereis wget` == "wget:" ]];
+		then
+			sudo pacman -S wget
+		fi
+		
+		yaourt -S megasync
+	else
+  		#debian
+  		if [[ `whereis zenity` == "zenity:" ]];
+		then
+			sudo apt-get install zenity
+		fi
+		if [[ `whereis wget` == "wget:" ]];
+		then
+			sudo apt-get install wget
+		fi
+	
+		wget https://mega.nz/linux/MEGAsync/xUbuntu_15.10/amd64/megasync-xUbuntu_15.10_amd64.deb
+		sudo dpkg -i megasync-xUbuntu_15.10_amd64.deb
+		sudo rm megasync-xUbuntu_15.10_amd64.deb
+		sudo apt-get -y --force-yes -f install
+	fi	
+	
 	frun
 }
 
