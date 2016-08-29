@@ -8,5 +8,5 @@ Dependencies:
 
 To run it open a terminal and paste
 ```bash
-wget https://raw.githubusercontent.com/bssec/MEGA-Instances/master/mega_instances.sh && bash mega_instances.sh
+wget https://raw.githubusercontent.com/NicoVarg99/MEGA-Instances/master/mega_instances.sh && bash mega_instances.sh
 ```
