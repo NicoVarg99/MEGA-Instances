@@ -1,103 +1,91 @@
 #!/bin/bash
 
+#Some useful variables
+REALHOME=$HOME
+MEGADIR="MEGA"
+FILE=$REALHOME/$MEGADIR/.ok
+echo "REALHOME = $REALHOME"
+
+#Function that creates a Desktop Entry and sets it up for autostart at the login
+function generateDesktopEntry
+{
+	mkdir -p /home/$USER/.config/autostart
+	echo "[Desktop Entry]" > $REALHOME/.config/autostart/mega_instances.desktop
+	echo "Type=Application" >> $REALHOME/.config/autostart/mega_instances.desktop
+	echo "Exec=/home/$USER/MEGA/mega_instances.sh" >> $REALHOME/.config/autostart/mega_instances.desktop
+	echo "Name=megasync_instances" >> $REALHOME/.config/autostart/mega_instances.desktop
+	echo "Comment=Open all your MEGA instances"  >> $REALHOME/.config/autostart/mega_instances.desktop
+	chmod +x $REALHOME/.config/autostart/mega_instances.desktop
+}
+
 function finstall
 {
-	if [ -f "/etc/arch-release" ]; then
-  		#arch
-  		if [[ `whereis zenity` == "zenity:" ]];
-		then
-			sudo pacman -S zenity
-		fi
-		if [[ `whereis wget` == "wget:" ]];
-		then
-			sudo pacman -S wget
-		fi
-		
-		yaourt -S megasync
-	else
-  		#debian
-  		if [[ `whereis zenity` == "zenity:" ]];
-		then
-			sudo apt-get install zenity
-		fi
-		if [[ `whereis wget` == "wget:" ]];
-		then
-			sudo apt-get install wget
-		fi
-	
-		wget https://mega.nz/linux/MEGAsync/xUbuntu_15.10/amd64/megasync-xUbuntu_15.10_amd64.deb
-		sudo dpkg -i megasync-xUbuntu_15.10_amd64.deb
-		sudo rm megasync-xUbuntu_15.10_amd64.deb
-		sudo apt-get -y --force-yes -f install
-	fi	
-	
+	ERR=0
+
+	if [[ `whereis zenity` == "zenity:" ]];
+	then
+		echo "Dependency 'zenity' seems to be missing"
+		ERR=1
+	fi
+
+	if [[ `whereis megasync` == "megasync:" ]];
+	then
+		echo "Dependency 'megasync' seems to be missing"
+		ERR=1
+	fi
+
+	if [[ $ERR -ne 0 ]]; then
+		echo "Error: Install all required dependencies before running MEGA-Instances"
+		exit 1
+	fi
+
+	generateDesktopEntry
 	frun
 }
 
 function frun
 {
-	FILE=/home/$USER/MEGA/.ok
+	FILE=$REALHOME/$MEGADIR/.ok
 
 	if [ -f $FILE ];
 	then
-		echo "File $FILE exists. Will now launch the instances."
+		echo "MEGA-Instances is already configured. Will now launch the instances."
 
-		for d in /home/$USER/MEGA/*/ ; do
+		for d in $REALHOME/$MEGADIR/*/ ; do
 			echo "$d"
 			HOME=$d
 			megasync 2> /dev/null &
 		done
 
 	else
-	  	echo "File $FILE does not exist. Will now start the configuration."
+	  	echo "MEGA-Instances is not configured. Will now start the configuration."
 
-		INSTNUM=`zenity --entry --text="How many MEGA instances do you need?"`
-		mkdir -p /home/$USER/MEGA
+			INSTNUM=`zenity --entry --text="How many MEGA instances do you need?"`
+			mkdir -p $REALHOME/$MEGADIR
 
+			for (( i=1; i<=INSTNUM; i++ ))
+			do
+				NAME=`zenity --entry --text="Insert the name for instance $i/$INSTNUM"`
+				ARRAY[$i]=$NAME
+				mkdir -p $REALHOME/$MEGADIR/$NAME
+			done
 
-		for (( i=1; i<=INSTNUM; i++ ))
-		do
-			NAME=`zenity --entry --text="Insert the name for instance $i/$INSTNUM"`
-			ARRAY[$i]=$NAME	
-			mkdir -p /home/$USER/MEGA/$NAME
-		done
+			for (( i=1; i<=INSTNUM; i++ ))
+			do
+				zenity --warning --text="Instance ${ARRAY[i]} ($i/$INSTNUM). Close it after the configuration."
+				HOME=$REALHOME/$MEGADIR/${ARRAY[$i]}
+				megasync
+			done
 
-		for (( i=1; i<=INSTNUM; i++ ))
-		do
-			zenity --warning --text="Instance ${ARRAY[i]} ($i/$INSTNUM). Close it after the configuration."
-			HOME=/home/$USER/MEGA/${ARRAY[$i]}
-			megasync
-		done
-		
-		
-		
-		
-		mkdir -p /home/$USER/.config/autostart
-		
-		
-		
-		echo "[Desktop Entry]" > .config/autostart/mega_instances.desktop
-		echo "Type=Application" >> .config/autostart/mega_instances.desktop
-		echo "Exec=/home/$USER/MEGA/mega_instances.sh" >> .config/autostart/mega_instances.desktop
-		echo "Name=megasync_instances" >> .config/autostart/mega_instances.desktop
-		echo "Comment=Open all the MEGA instances"  >> .config/autostart/mega_instances.desktop
-		chmod +x .config/autostart/mega_instances.desktop
+			generateDesktopEntry
 
-		
-		
-		
-		zenity --warning --text="Will now launch all the instances. They will also start at every startup."
-		touch /home/$USER/MEGA/.ok
-		cp $0 /home/$USER/MEGA/mega_instances.sh
-		chmod +x /home/$USER/MEGA/mega_instances.sh
-		bash /home/$USER/MEGA/mega_instances.sh
+			zenity --warning --text="Will now launch all the instances. They will also start at every startup."
+			HOME=$REALHOME
+			touch $REALHOME/$MEGADIR/.ok #Mark as configured
+			cp $0 $REALHOME/$MEGADIR/mega_instances.sh
+			chmod +x $REALHOME/$MEGADIR/mega_instances.sh
+			bash $REALHOME/$MEGADIR/mega_instances.sh
 	fi
 }
 
-
-if [ -f /usr/bin/megasync ];
-then
-	frun
-else
-	finstall
-fi
+finstall

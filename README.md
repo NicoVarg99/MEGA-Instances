@@ -1,10 +1,9 @@
 # MEGA-Instances
-This script will help you running multiple MEGA (megasync) instances on Debian (Ubuntu, Linux Mint etc.) and Arch Linux.
-Make sure megasync is NOT installed before your first use of this script (as it will download all the dependencies).
+This script will help you running multiple MEGA (megasync) instances on Linux.
+Make sure megasync is installed before your first use of this script.
 Dependencies:
-  - wget
-  - zenity
   - megasync
+  - zenity
 
 To run it open a terminal and paste
 ```bash
