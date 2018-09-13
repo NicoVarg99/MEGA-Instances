@@ -6,6 +6,10 @@ MEGADIR="MEGA"
 FILE=$REALHOME/$MEGADIR/.ok
 echo "REALHOME = $REALHOME"
 
+zenity(){
+    /usr/bin/zenity "$@" 2>/dev/null
+}
+
 #Function that creates a Desktop Entry and sets it up for autostart at the login
 function generateDesktopEntry
 {
