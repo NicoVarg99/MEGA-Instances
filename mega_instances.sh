@@ -4,42 +4,39 @@
 REALHOME=$HOME
 MEGADIR="MEGA"
 FILE=$REALHOME/$MEGADIR/.ok
+ERR=0
 echo "REALHOME = $REALHOME"
 
-zenity(){
-    /usr/bin/zenity "$@" 2>/dev/null
+zenity () {
+  /usr/bin/zenity "$@" 2>/dev/null
+}
+
+checkDep () {
+  if [[ `whereis $1` == "$1:" ]];
+  then
+    >&2 echo "Dependency '$1' seems to be missing"
+    ERR=1
+  fi
 }
 
 #Function that creates a Desktop Entry and sets it up for autostart at the login
-function generateDesktopEntry
-{
+generateDesktopEntry () {
+  DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
 	mkdir -p /home/$USER/.config/autostart
-	echo "[Desktop Entry]" > $REALHOME/.config/autostart/mega_instances.desktop
-	echo "Type=Application" >> $REALHOME/.config/autostart/mega_instances.desktop
-	echo "Exec=/home/$USER/MEGA/mega_instances.sh" >> $REALHOME/.config/autostart/mega_instances.desktop
-	echo "Name=megasync_instances" >> $REALHOME/.config/autostart/mega_instances.desktop
-	echo "Comment=Open all your MEGA instances"  >> $REALHOME/.config/autostart/mega_instances.desktop
-	chmod +x $REALHOME/.config/autostart/mega_instances.desktop
+	echo "[Desktop Entry]" > $DEPATH
+	echo "Type=Application" >> $DEPATH
+	echo "Exec=/home/$USER/MEGA/mega_instances.sh" >> $DEPATH
+	echo "Name=megasync_instances" >> $DEPATH
+	echo "Comment=Open all your MEGA instances"  >> $DEPATH
+	chmod +x $DEPATH
 }
 
-function finstall
-{
-	ERR=0
-
-	if [[ `whereis zenity` == "zenity:" ]];
-	then
-		echo "Dependency 'zenity' seems to be missing"
-		ERR=1
-	fi
-
-	if [[ `whereis megasync` == "megasync:" ]];
-	then
-		echo "Dependency 'megasync' seems to be missing"
-		ERR=1
-	fi
+finstall () {
+  checkDep "zenity"
+  checkDep "megasync"
 
 	if [[ $ERR -ne 0 ]]; then
-		echo "Error: Install all required dependencies before running MEGA-Instances"
+		>&2 echo "Error: Install all required dependencies before running MEGA-Instances"
 		exit 1
 	fi
 
@@ -47,13 +44,11 @@ function finstall
 	frun
 }
 
-function frun
-{
-	FILE=$REALHOME/$MEGADIR/.ok
-
+frun () {
 	if [ -f $FILE ];
 	then
-		echo "MEGA-Instances is already configured. Will now launch the instances."
+		echo "MEGA-Instances is already configured, launching the instances..."
+    echo "If you wish to run the first configuration again, manually remove $FILE"
 
 		for d in $REALHOME/$MEGADIR/*/ ; do
 			echo "$d"
