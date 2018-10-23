@@ -6,8 +6,8 @@ Dependencies:
   - zenity
 
 ## Images
-![System tray](img/path/tray-png?raw=true "System tray")
-![File manager](img/path/file-manager.png?raw=true "File manager")
+![System tray](img/tray-png?raw=true "System tray")
+![File manager](img/file-manager.png?raw=true "File manager")
 
 ## Installation
 ```bash
