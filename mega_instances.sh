@@ -3,7 +3,7 @@
 #Some useful variables
 REALHOME=$HOME
 MEGADIR="MEGA"
-FILE=$REALHOME/$MEGADIR/.ok
+FILE=$REALHOME/.config/megasync-instances/ok
 ERR=0
 echo "REALHOME = $REALHOME"
 
@@ -25,7 +25,7 @@ generateDesktopEntry () {
 	mkdir -p /home/$USER/.config/autostart
 	echo "[Desktop Entry]" > $DEPATH
 	echo "Type=Application" >> $DEPATH
-	echo "Exec=/home/$USER/MEGA/mega_instances.sh" >> $DEPATH
+	echo "Exec=/usr/bin/megasync-instances" >> $DEPATH
 	echo "Name=megasync_instances" >> $DEPATH
 	echo "Comment=Open all your MEGA instances"  >> $DEPATH
 	chmod +x $DEPATH
@@ -59,6 +59,13 @@ frun () {
 	else
 	  	echo "MEGA-Instances is not configured. Will now start the configuration."
 
+      if zenity --question --text=zenity --question --no-wrap --text="This is the first time you are running MEGA-Instances.\nIn order to continue we must delete your existing MEGA instance.\nPress Yes to continue, No to abort."; then
+          rm -rf ~/MEGA
+          rm -f ~/.config/megasync.desktop
+      else
+          exit
+      fi
+
 			INSTNUM=`zenity --entry --text="How many MEGA instances do you need?"`
 			mkdir -p $REALHOME/$MEGADIR
 
@@ -80,8 +87,8 @@ frun () {
 
 			zenity --warning --text="Will now launch all the instances. They will also start at every startup."
 			HOME=$REALHOME
-			touch $REALHOME/$MEGADIR/.ok #Mark as configured
-			cp $0 $REALHOME/$MEGADIR/mega_instances.sh
+			touch $FILE #Mark as configured
+			#cp $0 $REALHOME/$MEGADIR/mega_instances.sh
 			chmod +x $REALHOME/$MEGADIR/mega_instances.sh
 			bash $REALHOME/$MEGADIR/mega_instances.sh
 	fi
