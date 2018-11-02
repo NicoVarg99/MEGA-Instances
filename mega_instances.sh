@@ -6,6 +6,7 @@ MEGADIR="MEGA"
 FILEPATH=$REALHOME/.config/megasync-instances
 FILE=$FILEPATH/status
 ERR=0
+VERSION="0.0.1"
 echo "REALHOME = $REALHOME"
 
 zenity () {

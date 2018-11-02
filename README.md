@@ -20,7 +20,7 @@ megasync-instances
 #### Remove script
 ```bash
 rm ~/.config/autostart/mega_instances.desktop
-rm ~/.config/megasync-instances/ok
+rm ~/.config/megasync-instances/status
 sudo rm /usr/bin/megasync-instances
 ```
 #### Remove all instances
