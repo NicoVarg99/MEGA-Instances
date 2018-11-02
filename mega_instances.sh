@@ -3,7 +3,7 @@
 #Some useful variables
 REALHOME=$HOME
 MEGADIR="MEGA"
-FILE=$REALHOME/.config/megasync-instances/ok
+FILE=$REALHOME/.config/megasync-instances/status
 ERR=0
 echo "REALHOME = $REALHOME"
 
@@ -45,7 +45,7 @@ finstall () {
 }
 
 frun () {
-	if [ -f $FILE ];
+	if [ $(cat $FILE) == "1" ];
 	then
 		echo "MEGA-Instances is already configured, launching the instances..."
     echo "If you wish to run the first configuration again, manually remove $FILE"
@@ -87,11 +87,17 @@ frun () {
 
 			zenity --warning --text="Will now launch all the instances. They will also start at every startup."
 			HOME=$REALHOME
-			touch $FILE #Mark as configured
+			echo 1 > $FILE #Mark as configured
 			#cp $0 $REALHOME/$MEGADIR/mega_instances.sh
 			chmod +x $REALHOME/$MEGADIR/mega_instances.sh
 			bash $REALHOME/$MEGADIR/mega_instances.sh
 	fi
 }
+
+#Create config file if missing
+if [ ! -f $FILE ] ;
+then
+  echo 0 > $FILE
+fi
 
 finstall
