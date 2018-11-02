@@ -3,7 +3,8 @@
 #Some useful variables
 REALHOME=$HOME
 MEGADIR="MEGA"
-FILE=$REALHOME/.config/megasync-instances/status
+FILEPATH=$REALHOME/.config/megasync-instances
+FILE=$FILEPATH/status
 ERR=0
 echo "REALHOME = $REALHOME"
 
@@ -50,8 +51,10 @@ frun () {
 		echo "MEGA-Instances is already configured, launching the instances..."
     echo "If you wish to run the first configuration again, manually remove $FILE"
 
+    killall megasync 2> /dev/null #Close open megasync instances
+
 		for d in $REALHOME/$MEGADIR/*/ ; do
-			echo "$d"
+			echo "Launching $d"
 			HOME=$d
 			megasync 2> /dev/null &
 		done
@@ -60,6 +63,7 @@ frun () {
 	  	echo "MEGA-Instances is not configured. Will now start the configuration."
 
       if zenity --question --text=zenity --question --no-wrap --text="This is the first time you are running MEGA-Instances.\nIn order to continue we must delete your existing MEGA instance.\nPress Yes to continue, No to abort."; then
+          killall megasync 2> /dev/null #Close open megasync instances
           rm -rf ~/MEGA
           rm -f ~/.config/megasync.desktop
       else
@@ -88,15 +92,15 @@ frun () {
 			zenity --warning --text="Will now launch all the instances. They will also start at every startup."
 			HOME=$REALHOME
 			echo 1 > $FILE #Mark as configured
-			#cp $0 $REALHOME/$MEGADIR/mega_instances.sh
-			chmod +x $REALHOME/$MEGADIR/mega_instances.sh
-			bash $REALHOME/$MEGADIR/mega_instances.sh
+			bash $0 &
+      sleep 1
 	fi
 }
 
 #Create config file if missing
 if [ ! -f $FILE ] ;
 then
+  mkdir -p $FILEPATH
   echo 0 > $FILE
 fi
 
