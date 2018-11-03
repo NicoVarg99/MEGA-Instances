@@ -12,11 +12,15 @@ Dependencies:
 ## Installation
 ```bash
 sudo wget -O /usr/bin/megasync-instances https://raw.githubusercontent.com/NicoVarg99/MEGA-Instances/master/mega_instances.sh
-sudo chmod 644 /usr/bin/megasync-instances
+sudo chmod 755 /usr/bin/megasync-instances
 megasync-instances
 ```
 
 ## Uninstallation
+#### Close all instances
+```bash
+killall megasync
+```
 #### Remove script
 ```bash
 rm ~/.config/autostart/mega_instances.desktop
