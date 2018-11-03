@@ -66,7 +66,7 @@ frun () {
       if zenity --question --text=zenity --question --no-wrap --text="This is the first time you are running MEGA-Instances.\nIn order to continue we must delete your existing MEGA instance.\nPress Yes to continue, No to abort."; then
           killall megasync 2> /dev/null #Close open megasync instances
           rm -rf ~/MEGA
-          rm -f ~/.config/megasync.desktop
+          rm -f ~/.config/autostart/megasync.desktop
       else
           exit
       fi
