@@ -15,6 +15,7 @@ sudo wget -O /usr/bin/megasync-instances https://raw.githubusercontent.com/NicoV
 sudo chmod 755 /usr/bin/megasync-instances
 megasync-instances
 ```
+Arch Linux users can install the package directly from AUR ([megasync-instances](https://aur.archlinux.org/packages/megasync-instances))
 
 ## Uninstallation
 #### Close all instances
