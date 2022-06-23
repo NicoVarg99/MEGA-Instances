@@ -42,7 +42,6 @@ finstall () {
 		exit 1
 	fi
 
-	generateDesktopEntry
 	frun
 }
 
