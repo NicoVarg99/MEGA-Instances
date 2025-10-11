@@ -22,8 +22,12 @@ parse_args() {
 				MEGADIR="$REALHOME/$2"
 			;;
 
-			(--add)
+			(--add-more)
 				ADD_MORE_INSTANCES=1
+			;;
+
+			(--autostart)
+				TOGGLE_AUTOSTART=1
 			;;
 		esac
 
@@ -38,7 +42,8 @@ show_help() {
 		options:
 			-h | --help
 			-m | --megadir		set MEGADIR, defaults to ~/MEGA-Instances
-			     --add			add more instances to MEGADIR
+			     --add-more		add more instances to MEGADIR
+				 --autostart	toggle autostart
 	HELP
 }
 
