@@ -126,7 +126,9 @@ add_instances() {
 	while true
 	do
 		INST="instance-${INST_NUM}"
-		NAME="$(zenity --entry --text="Name this instance, then configure and close it.")"
+		NAME="$(zenity --title="Add new instance" \
+			--entry --entry-text="$INST" \
+			--text="Set the name of instance, then configure and close it.")"
 
 		if [ -z "$NAME" ]
 		then
