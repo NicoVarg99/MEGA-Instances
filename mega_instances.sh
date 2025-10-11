@@ -5,7 +5,7 @@ REALHOME=$HOME
 MEGADIR="$REALHOME/MEGA-Instances"
 VERSION="0.0.1"
 
-parseArgs() {
+parse_args() {
 
 	while [ $# -gt 0 ]
 	do
@@ -31,7 +31,7 @@ parseArgs() {
 	done
 }
 
-showHelp() {
+show_help() {
 	cat <<-HELP
 		usage: $(basename $0) [options]
 
@@ -53,7 +53,7 @@ zenity () {
 	/usr/bin/zenity "$@" 2>/dev/null
 }
 
-checkDeps () {
+check_deps () {
 
 	while [ $# -gt 0 ]
 	do
@@ -73,8 +73,8 @@ checkDeps () {
 }
 
 #Function that creates a Desktop Entry and sets it up for autostart at the login
-generateDesktopEntry () {
-	DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
+generate_desktop_entry () {
+	local DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
 	mkdir -p $REALHOME/.config/autostart
 	
 	cat <<-ENTRY > "$DEPATH"
@@ -88,24 +88,24 @@ generateDesktopEntry () {
 	chmod +x $DEPATH
 }
 
-finstall () {
-	checkDeps zenity megasync
+configure_instances () {
+	check_deps zenity megasync
 
 	debug "${MEGADIR} is not configured."
 
-	addInstances
+	add_instances
 
 	if zenity --question --text="Launching all instances. Do you want to also autostart them?"
 	then
-		generateDesktopEntry
+		generate_desktop_entry
 	fi
 
 	touch "$MEGADIR/.configured"
 
-	frun
+	launch_instances
 }
 
-addInstances() {
+add_instances() {
 	local INST_NUM=$(($(find "$MEGADIR" -mindepth 1 -maxdepth 1 -type d | wc -l) + 1))
 	local INST INST_DIR NAME
 	debug "Adding instances..."
@@ -133,7 +133,7 @@ addInstances() {
 	done
 }
 
-frun () {
+launch_instances () {
 	debug "$MEGADIR seems to be populated already, launching all instances."
 	for d in $MEGADIR/*/
 	do
@@ -143,19 +143,19 @@ frun () {
 }
 
 debug "REALHOME = $REALHOME"
-parseArgs
+parse_args
 
 if [ -v SHOW_HELP ]
 then
-	showHelp
+	show_help
 elif [ -f "$MEGADIR/.configured" ]
 then
 	if [ -v ADD_MORE_INSTANCES ]
 	then
-		addInstances
+		add_instances
 	fi
 
-	frun
+	launch_instances
 else
-	finstall
+	configure_instances
 fi
