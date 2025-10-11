@@ -15,6 +15,11 @@ do
 		(-h|--help)
 			SHOW_HELP=1
 		;;
+
+		(-v|--verbose)
+			VERBOSE=1
+		;;
+
 	esac
 
 	shift
@@ -31,6 +36,13 @@ then
 	HELP
 	exit 0
 fi
+
+debug() {
+	if [ -v VERBOSE ]
+	then
+		echo "$@"
+	fi
+}
 
 zenity () {
 	/usr/bin/zenity "$@" 2>/dev/null
