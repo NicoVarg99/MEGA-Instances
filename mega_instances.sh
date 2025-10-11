@@ -66,7 +66,15 @@ frun () {
 	else
 		echo "MEGA-Instances is not configured. Will now start the configuration."
 
-		if zenity --question --text=zenity --question --no-wrap --text="This is the first time you are running MEGA-Instances.\nIn order to continue we must delete your existing MEGA instance.\nPress Yes to continue, No to abort."; then
+		local text=$(cat <<-TEXT
+		This is the first time you are running MEGA-Instances.
+		In order to continue we must delete your existing MEGA instance.
+		Press Yes to continue, No to abort.
+		TEXT
+		)
+
+		if zenity --question --text=zenity --question --no-wrap --text=$TEXT
+		then
 			killall megasync 2> /dev/null #Close open megasync instances
 			rm -rf ~/MEGA
 			rm -f ~/.config/autostart/megasync.desktop
