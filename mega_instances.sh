@@ -135,6 +135,13 @@ add_instances() {
 			NAME="$INST"
 		fi
 		INST_DIR="$MEGADIR/$NAME"
+
+		if [ -d "$INST_DIR" ]
+		then
+			zenity --error --title="name collision" --text="$NAME already exists in $MEGADIR, pick another name!"
+			continue
+		fi
+
 		debug "Creating $INST_DIR"
 		mkdir -p "$INST_DIR"
 
