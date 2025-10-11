@@ -89,8 +89,6 @@ generate_desktop_entry () {
 }
 
 configure_instances () {
-	check_deps zenity megasync
-
 	debug "${MEGADIR} is not configured."
 
 	add_instances
@@ -142,6 +140,7 @@ launch_instances () {
 	done
 }
 
+check_deps zenity megasync
 debug "REALHOME = $REALHOME"
 parse_args
 
