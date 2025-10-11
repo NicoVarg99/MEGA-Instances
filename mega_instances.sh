@@ -3,6 +3,7 @@
 #Some useful variables
 REALHOME=$HOME
 MEGADIR="$REALHOME/MEGA-Instances"
+DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
 VERSION="0.0.1"
 
 parse_args() {
@@ -82,7 +83,6 @@ check_deps () {
 
 #Function that creates a Desktop Entry and sets it up for autostart at the login
 generate_desktop_entry () {
-	local DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
 	mkdir -p $REALHOME/.config/autostart
 	
 	cat <<-ENTRY > "$DEPATH"
@@ -94,6 +94,10 @@ generate_desktop_entry () {
 	ENTRY
 
 	chmod +x $DEPATH
+}
+
+rm_desktop_entry() {
+	rm "$DEPATH"
 }
 
 configure_instances () {
@@ -160,6 +164,16 @@ then
 	if [ -v ADD_MORE_INSTANCES ]
 	then
 		add_instances
+	fi
+
+	if [ -v TOGGLE_AUTOSTART ]
+	then
+		if [ -f $DEPATH ]
+		then
+			rm_desktop_entry
+		else
+			generate_desktop_entry
+		fi
 	fi
 
 	launch_instances
