@@ -30,6 +30,10 @@ parse_args() {
       (--toggle-autostart)
         TOGGLE_AUTOSTART=1
       ;;
+
+      (--uninstall)
+        UNINSTALLING=1
+      ;;
     esac
 
     shift
@@ -46,7 +50,8 @@ options:
                                   defaults to ~/MEGA-Instances
 
        --add-more               add more instances to a configured path
-       --toggle-autostart       toggle autostart
+       --toggle-autostart
+       --uninstall
 HELP
 }
 
@@ -64,7 +69,7 @@ zenity () {
 check_deps () {
   while [ $# -gt 0 ]
   do
-    if ! which $1 2>/dev/null
+    if ! which $1 >/dev/null 2>&1
     then
       >&2 echo "Dependency '$1' seems to be missing"
       local ERR=1
@@ -164,6 +169,12 @@ launch_instances () {
   done
 }
 
+uninstall() {
+  rm "$DEPATH"
+  rm -rf "$MEGADIR"
+  sudo rm /usr/bin/megasync-instances
+}
+
 check_deps zenity megasync
 debug "REALHOME = $REALHOME"
 parse_args $@
@@ -171,6 +182,9 @@ parse_args $@
 if [ -v SHOW_HELP ]
 then
   show_help
+elif [ -v UNINSTALLING ]
+then
+  uninstall
 elif [ -f "$MEGADIR/.configured" ]
 then
   if [ -v ADD_MORE_INSTANCES ]
