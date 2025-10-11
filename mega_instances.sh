@@ -25,11 +25,15 @@ checkDep () {
 generateDesktopEntry () {
 	DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
 	mkdir -p /home/$USER/.config/autostart
-	echo "[Desktop Entry]" > $DEPATH
-	echo "Type=Application" >> $DEPATH
-	echo "Exec=/usr/bin/megasync-instances" >> $DEPATH
-	echo "Name=megasync_instances" >> $DEPATH
-	echo "Comment=Open all your MEGA instances"  >> $DEPATH
+	
+	cat <<-ENTRY > "$DEPATH"
+	[Desktop Entry]
+	Type=Application
+	Exec=/usr/bin/megasync-instances
+	Name=megasync_instances
+	Comment=Open all your MEGA instances
+	ENTRY
+
 	chmod +x $DEPATH
 }
 
