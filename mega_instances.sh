@@ -157,7 +157,7 @@ launch_instances () {
 
 check_deps zenity megasync
 debug "REALHOME = $REALHOME"
-parse_args
+parse_args $@
 
 if [ -v SHOW_HELP ]
 then
