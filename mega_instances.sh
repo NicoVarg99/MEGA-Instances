@@ -9,6 +9,31 @@ ERR=0
 VERSION="0.0.1"
 echo "REALHOME = $REALHOME"
 
+ORIGINAL_ARGS=("$@")
+
+while [ $# -gt 0 ]
+do
+	case $1 in 
+		(-h|--help)
+			SHOW_HELP=1
+		;;
+	esac
+
+	shift
+done
+
+if [ -v SHOW_HELP ]
+then
+	cat <<-HELP
+		usage: $(basename $0) [options]
+
+		options:
+			-h | --help
+			-m | --megadir		set MEGADIR, defaults to ~/MEGA-Instances
+	HELP
+	exit 0
+fi
+
 zenity () {
 	/usr/bin/zenity "$@" 2>/dev/null
 }
