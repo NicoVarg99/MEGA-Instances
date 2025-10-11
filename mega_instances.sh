@@ -18,6 +18,10 @@ parseArgs() {
 				VERBOSE=1
 			;;
 
+			(-m|--megadir)
+				MEGADIR="$REALHOME/$2"
+			;;
+
 			(--add)
 				ADD_MORE_INSTANCES=1
 			;;
