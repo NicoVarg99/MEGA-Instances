@@ -3,7 +3,6 @@
 #Some useful variables
 REALHOME=$HOME
 MEGADIR="$REALHOME/MEGA-Instances"
-ERR=0
 VERSION="0.0.1"
 debug "REALHOME = $REALHOME"
 
@@ -52,11 +51,21 @@ zenity () {
 	/usr/bin/zenity "$@" 2>/dev/null
 }
 
-checkDep () {
-	if [[ `whereis $1` == "$1:" ]]
+checkDeps () {
+	while [ $# -gt 0 ]
+	do
+		if ! which $1 2>/dev/null
+		then
+			>&2 echo "Dependency '$1' seems to be missing"
+			local ERR=1
+		fi
+		shift
+	done
+
+	if [ -v ERR ]
 	then
-		>&2 echo "Dependency '$1' seems to be missing"
-		ERR=1
+		>&2 echo "Error: Install all required dependencies before running MEGA-Instances"
+		exit 1
 	fi
 }
 
@@ -77,14 +86,7 @@ generateDesktopEntry () {
 }
 
 finstall () {
-	checkDep "zenity"
-	checkDep "megasync"
-
-	if [[ $ERR -ne 0 ]]
-	then
-		>&2 echo "Error: Install all required dependencies before running MEGA-Instances"
-		exit 1
-	fi
+	checkDeps zenity megasync
 
 	debug "${MEGADIR} is not configured."
 
