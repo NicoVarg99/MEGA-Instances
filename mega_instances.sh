@@ -7,10 +7,9 @@ DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
 VERSION="0.0.1"
 
 parse_args() {
-
 	while [ $# -gt 0 ]
 	do
-		case $1 in 
+		case $1 in
 			(-h|--help)
 				SHOW_HELP=1
 			;;
@@ -47,7 +46,7 @@ show_help() {
 												defaults to ~/MEGA-Instances
 
 			     --add-more					add more instances to a configured path
-				 --toggle-autostart				toggle autostart
+				 --toggle-autostart			toggle autostart
 	HELP
 }
 
@@ -63,7 +62,6 @@ zenity () {
 }
 
 check_deps () {
-
 	while [ $# -gt 0 ]
 	do
 		if ! which $1 2>/dev/null
@@ -84,7 +82,7 @@ check_deps () {
 #Function that creates a Desktop Entry and sets it up for autostart at the login
 generate_desktop_entry () {
 	mkdir -p $REALHOME/.config/autostart
-	
+
 	cat <<-ENTRY > "$DEPATH"
 	[Desktop Entry]
 	Type=Application
@@ -139,7 +137,7 @@ add_instances() {
 		mkdir -p "$INST_DIR"
 
 		HOME="$INST_DIR" megasync
-		
+
 		if ! zenity --question --text="Do you need another instance?"
 		then
 			break
