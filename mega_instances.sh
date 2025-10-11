@@ -2,9 +2,7 @@
 
 #Some useful variables
 REALHOME=$HOME
-MEGADIR="MEGA"
-FILEPATH=$REALHOME/.config/megasync-instances
-FILE=$FILEPATH/status
+MEGADIR="$REALHOME/MEGA-Instances"
 ERR=0
 VERSION="0.0.1"
 echo "REALHOME = $REALHOME"
@@ -49,7 +47,7 @@ checkDep () {
 #Function that creates a Desktop Entry and sets it up for autostart at the login
 generateDesktopEntry () {
 	DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
-	mkdir -p /home/$USER/.config/autostart
+	mkdir -p $REALHOME/.config/autostart
 	
 	cat <<-ENTRY > "$DEPATH"
 	[Desktop Entry]
@@ -75,70 +73,53 @@ finstall () {
 	frun
 }
 
+addInstances() {
+	local INST_NUM=1 INST INST_DIR NAME
+
+	while true
+	do
+		INST="instance-${INST_NUM}"
+		NAME="$(zenity --entry --text="Name this instance, then configure and close it.")"
+
+		if [ -z "$NAME" ]
+		then
+			NAME="$INST"
+		fi
+		INST_DIR="$MEGADIR/$NAME"
+		mkdir -p "$INST_DIR"
+
+		HOME="$INST_DIR" megasync
+		
+		if ! zenity --question --text="Do you need another instance?"
+		then
+			break
+		fi
+		((INST_NUM++))
+	done
+}
+
 frun () {
-	if [ $(cat $FILE) == "1" ]
+	if [ -f "$MEGADIR/.configured" ]
 	then
-		echo "MEGA-Instances is already configured, launching the instances..."
-		echo "If you wish to run the first configuration again, manually remove $FILE"
-
-		killall megasync 2> /dev/null #Close open megasync instances
-
-		for d in $REALHOME/$MEGADIR/*/ ; do
-			echo "Launching $d"
-			HOME=$d
-			megasync 2> /dev/null &
+		echo "$MEGADIR seems to be populated already, launching all instances."
+		for d in $MEGADIR/*/
+		do
+			HOME="$d" megasync 2> /dev/null &
 		done
 	else
-		echo "MEGA-Instances is not configured. Will now start the configuration."
+		echo "${MEGADIR} is not configured."
 
-		local text=$(cat <<-TEXT
-		This is the first time you are running MEGA-Instances.
-		In order to continue we must delete your existing MEGA instance.
-		Press Yes to continue, No to abort.
-		TEXT
-		)
+		addInstances
 
-		if zenity --question --text=zenity --question --no-wrap --text=$TEXT
+		if zenity --question --text="Launching all instances. Do you want to also autostart them?"
 		then
-			killall megasync 2> /dev/null #Close open megasync instances
-			rm -rf ~/MEGA
-			rm -f ~/.config/autostart/megasync.desktop
-		else
-			exit
+			generateDesktopEntry
 		fi
 
-		INSTNUM=`zenity --entry --text="How many MEGA instances do you need?"`
-		mkdir -p $REALHOME/$MEGADIR
-
-		for (( i=1; i<=INSTNUM; i++ ))
-		do
-			NAME=`zenity --entry --text="Insert the name for instance $i/$INSTNUM"`
-			ARRAY[$i]=$NAME
-			mkdir -p $REALHOME/$MEGADIR/$NAME
-		done
-
-		for (( i=1; i<=INSTNUM; i++ ))
-		do
-			zenity --warning --text="Instance ${ARRAY[i]} ($i/$INSTNUM). Close it after the configuration."
-			HOME=$REALHOME/$MEGADIR/${ARRAY[$i]}
-			megasync
-		done
-
-		generateDesktopEntry
-
-		zenity --warning --text="Will now launch all the instances. They will also start at every startup."
-		HOME=$REALHOME
-		echo 1 > $FILE #Mark as configured
+		touch "$MEGADIR/.configured"
 		bash $0 &
 		sleep 1
 	fi
 }
-
-#Create config file if missing
-if [ ! -f $FILE ]
-then
-	mkdir -p $FILEPATH
-	echo 0 > $FILE
-fi
 
 finstall
