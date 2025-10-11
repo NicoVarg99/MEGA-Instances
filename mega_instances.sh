@@ -20,6 +20,9 @@ do
 			VERBOSE=1
 		;;
 
+		(--add)
+			ADD_MORE_INSTANCES=1
+		;;
 	esac
 
 	shift
@@ -33,6 +36,7 @@ then
 		options:
 			-h | --help
 			-m | --megadir		set MEGADIR, defaults to ~/MEGA-Instances
+			     --add			add more instances to MEGADIR
 	HELP
 	exit 0
 fi
@@ -82,11 +86,24 @@ finstall () {
 		exit 1
 	fi
 
+	debug "${MEGADIR} is not configured."
+
+	addInstances
+
+	if zenity --question --text="Launching all instances. Do you want to also autostart them?"
+	then
+		generateDesktopEntry
+	fi
+
+	touch "$MEGADIR/.configured"
+
 	frun
 }
 
 addInstances() {
-	local INST_NUM=1 INST INST_DIR NAME
+	local INST_NUM=$(($(find "$MEGADIR" -mindepth 1 -maxdepth 1 -type d | wc -l) + 1))
+	local INST INST_DIR NAME
+	debug "Adding instances..."
 
 	while true
 	do
@@ -98,6 +115,7 @@ addInstances() {
 			NAME="$INST"
 		fi
 		INST_DIR="$MEGADIR/$NAME"
+		debug "Creating $INST_DIR"
 		mkdir -p "$INST_DIR"
 
 		HOME="$INST_DIR" megasync
@@ -111,27 +129,22 @@ addInstances() {
 }
 
 frun () {
-	if [ -f "$MEGADIR/.configured" ]
-	then
-		echo "$MEGADIR seems to be populated already, launching all instances."
-		for d in $MEGADIR/*/
-		do
-			HOME="$d" megasync 2> /dev/null &
-		done
-	else
-		echo "${MEGADIR} is not configured."
-
-		addInstances
-
-		if zenity --question --text="Launching all instances. Do you want to also autostart them?"
-		then
-			generateDesktopEntry
-		fi
-
-		touch "$MEGADIR/.configured"
-		bash $0 &
-		sleep 1
-	fi
+	debug "$MEGADIR seems to be populated already, launching all instances."
+	for d in $MEGADIR/*/
+	do
+		debug "Launching $d"
+		HOME="$d" megasync 2> /dev/null &
+	done
 }
 
-finstall
+if [ -f "$MEGADIR/.configured" ]
+then
+	if [ -v ADD_MORE_INSTANCES ]
+	then
+		addInstances
+	fi
+
+	frun
+else
+	finstall
+fi
