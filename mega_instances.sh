@@ -96,8 +96,13 @@ generate_desktop_entry () {
 	chmod +x $DEPATH
 }
 
-rm_desktop_entry() {
-	rm "$DEPATH"
+toggle_autostart() {
+	if [ -f "$DEPATH" ]
+	then
+		rm "$DEPATH"
+	else
+		generate_desktop_entry
+	fi
 }
 
 configure_instances () {
@@ -168,12 +173,7 @@ then
 
 	if [ -v TOGGLE_AUTOSTART ]
 	then
-		if [ -f $DEPATH ]
-		then
-			rm_desktop_entry
-		else
-			generate_desktop_entry
-		fi
+		toggle_autostart
 	fi
 
 	launch_instances
