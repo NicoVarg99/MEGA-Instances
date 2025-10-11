@@ -4,31 +4,30 @@
 REALHOME=$HOME
 MEGADIR="$REALHOME/MEGA-Instances"
 VERSION="0.0.1"
-debug "REALHOME = $REALHOME"
 
-ORIGINAL_ARGS=("$@")
+parseArgs() {
 
-while [ $# -gt 0 ]
-do
-	case $1 in 
-		(-h|--help)
-			SHOW_HELP=1
-		;;
+	while [ $# -gt 0 ]
+	do
+		case $1 in 
+			(-h|--help)
+				SHOW_HELP=1
+			;;
 
-		(-v|--verbose)
-			VERBOSE=1
-		;;
+			(-v|--verbose)
+				VERBOSE=1
+			;;
 
-		(--add)
-			ADD_MORE_INSTANCES=1
-		;;
-	esac
+			(--add)
+				ADD_MORE_INSTANCES=1
+			;;
+		esac
 
-	shift
-done
+		shift
+	done
+}
 
-if [ -v SHOW_HELP ]
-then
+showHelp() {
 	cat <<-HELP
 		usage: $(basename $0) [options]
 
@@ -37,8 +36,7 @@ then
 			-m | --megadir		set MEGADIR, defaults to ~/MEGA-Instances
 			     --add			add more instances to MEGADIR
 	HELP
-	exit 0
-fi
+}
 
 debug() {
 	if [ -v VERBOSE ]
@@ -52,6 +50,7 @@ zenity () {
 }
 
 checkDeps () {
+
 	while [ $# -gt 0 ]
 	do
 		if ! which $1 2>/dev/null
@@ -139,7 +138,13 @@ frun () {
 	done
 }
 
-if [ -f "$MEGADIR/.configured" ]
+debug "REALHOME = $REALHOME"
+parseArgs
+
+if [ -v SHOW_HELP ]
+then
+	showHelp
+elif [ -f "$MEGADIR/.configured" ]
 then
 	if [ -v ADD_MORE_INSTANCES ]
 	then
