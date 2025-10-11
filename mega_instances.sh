@@ -7,161 +7,161 @@ DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
 VERSION="0.0.1"
 
 parse_args() {
-	while [ $# -gt 0 ]
-	do
-		case $1 in
-			(-h|--help)
-				SHOW_HELP=1
-			;;
+  while [ $# -gt 0 ]
+  do
+    case $1 in
+      (-h|--help)
+        SHOW_HELP=1
+      ;;
 
-			(-v|--verbose)
-				VERBOSE=1
-			;;
+      (-v|--verbose)
+        VERBOSE=1
+      ;;
 
-			(-m|--megadir)
-				MEGADIR="$REALHOME/$2"
-				shift
-			;;
+      (-m|--megadir)
+        MEGADIR="$REALHOME/$2"
+        shift
+      ;;
 
-			(--add-more)
-				ADD_MORE_INSTANCES=1
-			;;
+      (--add-more)
+        ADD_MORE_INSTANCES=1
+      ;;
 
-			(--toggle-autostart)
-				TOGGLE_AUTOSTART=1
-			;;
-		esac
+      (--toggle-autostart)
+        TOGGLE_AUTOSTART=1
+      ;;
+    esac
 
-		shift
-	done
+    shift
+  done
 }
 
 show_help() {
-	cat <<-HELP
-		usage: $(basename $0) [options]
+  cat <<HELP
+usage: $(basename $0) [options]
 
-		options:
-			-h | --help
-			-m | --megadir	PATH_TO_DIR		overrides path to instances
-												defaults to ~/MEGA-Instances
+options:
+  -h | --help
+  -m | --megadir PATH_TO_DIR    overrides path to instances
+                                  defaults to ~/MEGA-Instances
 
-			     --add-more					add more instances to a configured path
-				 --toggle-autostart			toggle autostart
-	HELP
+       --add-more               add more instances to a configured path
+       --toggle-autostart       toggle autostart
+HELP
 }
 
 debug() {
-	if [ -v VERBOSE ]
-	then
-		echo "$@"
-	fi
+  if [ -v VERBOSE ]
+  then
+    echo "$@"
+  fi
 }
 
 zenity () {
-	/usr/bin/zenity "$@" 2>/dev/null
+  /usr/bin/zenity "$@" 2>/dev/null
 }
 
 check_deps () {
-	while [ $# -gt 0 ]
-	do
-		if ! which $1 2>/dev/null
-		then
-			>&2 echo "Dependency '$1' seems to be missing"
-			local ERR=1
-		fi
-		shift
-	done
+  while [ $# -gt 0 ]
+  do
+    if ! which $1 2>/dev/null
+    then
+      >&2 echo "Dependency '$1' seems to be missing"
+      local ERR=1
+    fi
+    shift
+  done
 
-	if [ -v ERR ]
-	then
-		>&2 echo "Error: Install all required dependencies before running MEGA-Instances"
-		exit 1
-	fi
+  if [ -v ERR ]
+  then
+    >&2 echo "Error: Install all required dependencies before running MEGA-Instances"
+    exit 1
+  fi
 }
 
 #Function that creates a Desktop Entry and sets it up for autostart at the login
 generate_desktop_entry () {
-	mkdir -p $REALHOME/.config/autostart
+  mkdir -p $REALHOME/.config/autostart
 
-	cat <<-ENTRY > "$DEPATH"
-	[Desktop Entry]
-	Type=Application
-	Exec=/usr/bin/megasync-instances
-	Name=megasync_instances
-	Comment=Open all your MEGA instances
-	ENTRY
+  cat <<ENTRY > "$DEPATH"
+[Desktop Entry]
+Type=Application
+Exec=/usr/bin/megasync-instances
+Name=megasync_instances
+Comment=Open all your MEGA instances
+ENTRY
 
-	chmod +x $DEPATH
+  chmod +x $DEPATH
 }
 
 toggle_autostart() {
-	if [ -f "$DEPATH" ]
-	then
-		rm "$DEPATH"
-	else
-		generate_desktop_entry
-	fi
+  if [ -f "$DEPATH" ]
+  then
+    rm "$DEPATH"
+  else
+    generate_desktop_entry
+  fi
 }
 
 configure_instances () {
-	debug "${MEGADIR} is not configured."
+  debug "${MEGADIR} is not configured."
 
-	add_instances
+  add_instances
 
-	if zenity --question --text="Launching all instances. Do you want to also autostart them?"
-	then
-		generate_desktop_entry
-	fi
+  if zenity --question --text="Launching all instances. Do you want to also autostart them?"
+  then
+    generate_desktop_entry
+  fi
 
-	touch "$MEGADIR/.configured"
+  touch "$MEGADIR/.configured"
 
-	launch_instances
+  launch_instances
 }
 
 add_instances() {
-	local INST_NUM=$(($(find "$MEGADIR" -mindepth 1 -maxdepth 1 -type d | wc -l) + 1))
-	local INST INST_DIR NAME
-	debug "Adding instances..."
+  local INST_NUM=$(($(find "$MEGADIR" -mindepth 1 -maxdepth 1 -type d | wc -l) + 1))
+  local INST INST_DIR NAME
+  debug "Adding instances..."
 
-	while true
-	do
-		INST="instance-${INST_NUM}"
-		NAME="$(zenity --title="Add new instance" \
-			--entry --entry-text="$INST" \
-			--text="Set the name of instance, then configure and close it.")"
+  while true
+  do
+    INST="instance-${INST_NUM}"
+    NAME="$(zenity --title="Add new instance" \
+      --entry --entry-text="$INST" \
+      --text="Set the name of instance, then configure and close it.")"
 
-		if [ -z "$NAME" ]
-		then
-			NAME="$INST"
-		fi
-		INST_DIR="$MEGADIR/$NAME"
+    if [ -z "$NAME" ]
+    then
+      NAME="$INST"
+    fi
+    INST_DIR="$MEGADIR/$NAME"
 
-		if [ -d "$INST_DIR" ]
-		then
-			zenity --error --title="name collision" --text="$NAME already exists in $MEGADIR, pick another name!"
-			continue
-		fi
+    if [ -d "$INST_DIR" ]
+    then
+      zenity --error --title="name collision" --text="$NAME already exists in $MEGADIR, pick another name!"
+      continue
+    fi
 
-		debug "Creating $INST_DIR"
-		mkdir -p "$INST_DIR"
+    debug "Creating $INST_DIR"
+    mkdir -p "$INST_DIR"
 
-		HOME="$INST_DIR" megasync
+    HOME="$INST_DIR" megasync
 
-		if ! zenity --question --text="Do you need another instance?"
-		then
-			break
-		fi
-		((INST_NUM++))
-	done
+    if ! zenity --question --text="Do you need another instance?"
+    then
+      break
+    fi
+    ((INST_NUM++))
+  done
 }
 
 launch_instances () {
-	debug "$MEGADIR seems to be populated already, launching all instances."
-	for d in $MEGADIR/*/
-	do
-		debug "Launching $d"
-		HOME="$d" megasync 2> /dev/null &
-	done
+  debug "$MEGADIR seems to be populated already, launching all instances."
+  for d in $MEGADIR/*/
+  do
+    debug "Launching $d"
+    HOME="$d" megasync 2> /dev/null &
+  done
 }
 
 check_deps zenity megasync
@@ -170,20 +170,20 @@ parse_args $@
 
 if [ -v SHOW_HELP ]
 then
-	show_help
+  show_help
 elif [ -f "$MEGADIR/.configured" ]
 then
-	if [ -v ADD_MORE_INSTANCES ]
-	then
-		add_instances
-	fi
+  if [ -v ADD_MORE_INSTANCES ]
+  then
+    add_instances
+  fi
 
-	if [ -v TOGGLE_AUTOSTART ]
-	then
-		toggle_autostart
-	fi
+  if [ -v TOGGLE_AUTOSTART ]
+  then
+    toggle_autostart
+  fi
 
-	launch_instances
+  launch_instances
 else
-	configure_instances
+  configure_instances
 fi
