@@ -59,46 +59,45 @@ frun () {
 		killall megasync 2> /dev/null #Close open megasync instances
 
 		for d in $REALHOME/$MEGADIR/*/ ; do
-		echo "Launching $d"
-		HOME=$d
-		megasync 2> /dev/null &
+			echo "Launching $d"
+			HOME=$d
+			megasync 2> /dev/null &
 		done
-
 	else
 		echo "MEGA-Instances is not configured. Will now start the configuration."
 
-	if zenity --question --text=zenity --question --no-wrap --text="This is the first time you are running MEGA-Instances.\nIn order to continue we must delete your existing MEGA instance.\nPress Yes to continue, No to abort."; then
-		killall megasync 2> /dev/null #Close open megasync instances
-		rm -rf ~/MEGA
-		rm -f ~/.config/autostart/megasync.desktop
-	else
-		exit
-	fi
+		if zenity --question --text=zenity --question --no-wrap --text="This is the first time you are running MEGA-Instances.\nIn order to continue we must delete your existing MEGA instance.\nPress Yes to continue, No to abort."; then
+			killall megasync 2> /dev/null #Close open megasync instances
+			rm -rf ~/MEGA
+			rm -f ~/.config/autostart/megasync.desktop
+		else
+			exit
+		fi
 
-	INSTNUM=`zenity --entry --text="How many MEGA instances do you need?"`
-	mkdir -p $REALHOME/$MEGADIR
+		INSTNUM=`zenity --entry --text="How many MEGA instances do you need?"`
+		mkdir -p $REALHOME/$MEGADIR
 
-	for (( i=1; i<=INSTNUM; i++ ))
-	do
-		NAME=`zenity --entry --text="Insert the name for instance $i/$INSTNUM"`
-		ARRAY[$i]=$NAME
-		mkdir -p $REALHOME/$MEGADIR/$NAME
-	done
+		for (( i=1; i<=INSTNUM; i++ ))
+		do
+			NAME=`zenity --entry --text="Insert the name for instance $i/$INSTNUM"`
+			ARRAY[$i]=$NAME
+			mkdir -p $REALHOME/$MEGADIR/$NAME
+		done
 
-	for (( i=1; i<=INSTNUM; i++ ))
-	do
-		zenity --warning --text="Instance ${ARRAY[i]} ($i/$INSTNUM). Close it after the configuration."
-		HOME=$REALHOME/$MEGADIR/${ARRAY[$i]}
-		megasync
-	done
+		for (( i=1; i<=INSTNUM; i++ ))
+		do
+			zenity --warning --text="Instance ${ARRAY[i]} ($i/$INSTNUM). Close it after the configuration."
+			HOME=$REALHOME/$MEGADIR/${ARRAY[$i]}
+			megasync
+		done
 
-	generateDesktopEntry
+		generateDesktopEntry
 
-	zenity --warning --text="Will now launch all the instances. They will also start at every startup."
-	HOME=$REALHOME
-	echo 1 > $FILE #Mark as configured
-	bash $0 &
-	sleep 1
+		zenity --warning --text="Will now launch all the instances. They will also start at every startup."
+		HOME=$REALHOME
+		echo 1 > $FILE #Mark as configured
+		bash $0 &
+		sleep 1
 	fi
 }
 
