@@ -200,24 +200,20 @@ parse_args $@
 if [ -v SHOW_HELP ]
 then
   show_help
+elif [ -v ADD_MORE_INSTANCES ]
+then
+  add_instances
+elif [ -v TOGGLE_AUTOSTART ]
+then
+  toggle_autostart
 elif [ -v KILL_ALL ]
-then 
+then
   kill_all
 elif [ -v UNINSTALL ]
 then
   uninstall
 elif [ -f "$MEGADIR/.configured" ]
 then
-  if [ -v ADD_MORE_INSTANCES ]
-  then
-    add_instances
-  fi
-
-  if [ -v TOGGLE_AUTOSTART ]
-  then
-    toggle_autostart
-  fi
-
   launch_instances
 else
   configure_instances
