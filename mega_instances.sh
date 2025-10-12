@@ -25,16 +25,16 @@ parse_args() {
         shift
       ;;
 
-      (--add-more)
+      (-a|--add-more)
         ADD_MORE_INSTANCES=1
       ;;
 
-      (--toggle-autostart)
+      (-t|--toggle-autostart)
         TOGGLE_AUTOSTART=1
       ;;
 
-      (--uninstall)
-        UNINSTALLING=1
+      (-u|--uninstall)
+        UNINSTALL=1
       ;;
     esac
 
@@ -51,9 +51,9 @@ options:
   -m | --megadir PATH_TO_DIR    overrides path to instances
                                   defaults to ~/MEGA-Instances
 
-       --add-more               add more instances to a configured path
-       --toggle-autostart
-       --uninstall
+  -a | --add-more               add more instances to an already configured path
+  -t | --toggle-autostart
+  -u | --uninstall
 HELP
 }
 
