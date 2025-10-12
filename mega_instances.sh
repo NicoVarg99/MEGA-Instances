@@ -21,7 +21,7 @@ parse_args() {
       ;;
 
       (-m|--megadir)
-        MEGADIR="$REALHOME/$2"
+        MEGADIR="$(readlink -f "$2")"
         shift
       ;;
 
