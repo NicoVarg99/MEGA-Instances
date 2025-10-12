@@ -11,8 +11,8 @@ Dependencies:
 
 ## Installation
 ```bash
-sudo wget -O /usr/bin/megasync-instances https://raw.githubusercontent.com/NicoVarg99/MEGA-Instances/master/mega_instances.sh
-sudo chmod 755 /usr/bin/megasync-instances
+sudo wget -O /usr/local/bin/megasync-instances https://raw.githubusercontent.com/NicoVarg99/MEGA-Instances/master/mega_instances.sh
+sudo chmod 755 /usr/local/bin/megasync-instances
 megasync-instances
 ```
 Arch Linux users can install the package directly from AUR ([megasync-instances](https://aur.archlinux.org/packages/megasync-instances))
