@@ -191,10 +191,17 @@ kill_all() {
 }
 
 uninstall() {
-  rm "$DEPATH"
-  rm -rf "$MEGADIR"
-  echo "Deleting $BIN"
-  sudo rm $BIN
+  rm_desktop_entry
+
+  if zenity --question --title="Deleting synced files" --text="Do you want to remove '$MEGADIR'?"
+  then
+    rm -rf "$MEGADIR"
+  fi
+
+  if zenity --question --title="Deleting script" --text="Do you want to delete the script, too?"
+  then
+    rm "$PATH_TO_SCRIPT"
+  fi
 }
 
 check_deps zenity megasync
