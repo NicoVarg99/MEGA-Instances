@@ -5,6 +5,7 @@ REALHOME=$HOME
 MEGADIR="$REALHOME/MEGA-Instances"
 DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
 BIN=/usr/local/bin/megasync-instances
+PATH_TO_SCRIPT="$(readlink -f "$0")"
 VERSION="0.0.1"
 
 parse_args() {
@@ -92,7 +93,7 @@ generate_desktop_entry () {
   cat <<ENTRY > "$DEPATH"
 [Desktop Entry]
 Type=Application
-Exec=/usr/bin/megasync-instances
+Exec=$PATH_TO_SCRIPT
 Name=megasync_instances
 Comment=Open all your MEGA instances
 ENTRY
