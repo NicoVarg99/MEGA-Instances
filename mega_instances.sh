@@ -92,7 +92,7 @@ check_deps () {
 }
 
 #Function that creates a Desktop Entry and sets it up for autostart at the login
-generate_desktop_entry () {
+add_desktop_entry () {
   mkdir -p $REALHOME/.config/autostart
 
   cat <<ENTRY > "$DEPATH"
@@ -104,16 +104,20 @@ Comment=Open all your MEGA instances
 ENTRY
 
   chmod +x $DEPATH
+  echo "created $DEPATH"
+}
+
+rm_desktop_entry() {
+  rm "$DEPATH"
+  echo "deleted $DEPATH"
 }
 
 toggle_autostart() {
   if [ -f "$DEPATH" ]
   then
-    rm "$DEPATH"
-    echo "deleted $DEPATH"
+    rm_desktop_entry
   else
-    generate_desktop_entry
-    echo "created $DEPATH"
+    add_desktop_entry
   fi
 }
 
@@ -124,7 +128,7 @@ configure_instances () {
 
   if zenity --question --text="Launching all instances. Do you want to also autostart them?"
   then
-    generate_desktop_entry
+    add_desktop_entry
   fi
 
   touch "$MEGADIR/.configured"
