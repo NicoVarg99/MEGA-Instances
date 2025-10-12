@@ -33,6 +33,10 @@ parse_args() {
         TOGGLE_AUTOSTART=1
       ;;
 
+      (-k|--killall)
+        KILL_ALL=1
+      ;;
+
       (-u|--uninstall)
         UNINSTALL=1
       ;;
@@ -53,6 +57,7 @@ options:
 
   -a | --add-more               add more instances to an already configured path
   -t | --toggle-autostart
+  -k | --killall                instances based on above --megadir location
   -u | --uninstall
 HELP
 }
@@ -171,6 +176,14 @@ launch_instances () {
   done
 }
 
+kill_all() {
+  for pid in $(pgrep megasync); do
+    if tr '\0' '\n' < /proc/$pid/environ | grep -q 'HOME='"$MEGADIR"'/'; then
+      kill $pid &
+    fi
+  done
+}
+
 uninstall() {
   rm "$DEPATH"
   rm -rf "$MEGADIR"
@@ -185,7 +198,10 @@ parse_args $@
 if [ -v SHOW_HELP ]
 then
   show_help
-elif [ -v UNINSTALLING ]
+elif [ -v KILL_ALL ]
+then 
+  kill_all
+elif [ -v UNINSTALL ]
 then
   uninstall
 elif [ -f "$MEGADIR/.configured" ]
