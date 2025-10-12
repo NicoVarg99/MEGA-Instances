@@ -110,8 +110,10 @@ toggle_autostart() {
   if [ -f "$DEPATH" ]
   then
     rm "$DEPATH"
+    echo "deleted $DEPATH"
   else
     generate_desktop_entry
+    echo "created $DEPATH"
   fi
 }
 
