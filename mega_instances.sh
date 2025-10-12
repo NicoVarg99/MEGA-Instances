@@ -4,7 +4,6 @@
 REALHOME=$HOME
 MEGADIR="$REALHOME/MEGA-Instances"
 DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
-BIN=/usr/local/bin/megasync-instances
 PATH_TO_SCRIPT="$(readlink -f "$0")"
 VERSION="0.0.1"
 
