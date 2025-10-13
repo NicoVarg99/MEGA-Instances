@@ -220,6 +220,8 @@ uninstall() {
     if [[ "$PATH_TO_SCRIPT" == /usr/bin/* ]]
     then
       sudo pacman -Rscn megasync-instances
+    elif [[ "$PATH_TO_SCRIPT" == /usr/local/bin/* ]]
+      sudo rm "$PATH_TO_SCRIPT"
     else
       rm "$PATH_TO_SCRIPT"
     fi
