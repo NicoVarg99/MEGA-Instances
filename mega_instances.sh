@@ -7,6 +7,7 @@ PATH_TO_SCRIPT="$(readlink -f "$0")"
 VERSION="0.0.1"
 
 parse_args() {
+  local -a unknown_flags
   while [ $# -gt 0 ]
   do
     case $1 in
@@ -38,10 +39,20 @@ parse_args() {
       (-u|--uninstall)
         UNINSTALL=1
       ;;
+
+      (*)
+        unknown_flags+=("$1")
+      ;;
     esac
 
     shift
   done
+
+  if [ ${#unknown_flags[@]} -gt 0 ]
+  then
+    echo "UNKNOWN FLAGS: ${unknown_flags[@]}"
+    exit 1
+  fi
 }
 
 show_help() {
