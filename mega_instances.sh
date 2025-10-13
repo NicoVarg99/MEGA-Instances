@@ -199,7 +199,12 @@ uninstall() {
 
   if zenity --question --title="Deleting script" --text="Do you want to delete the script, too?"
   then
-    rm "$PATH_TO_SCRIPT"
+    if [[ "$PATH_TO_SCRIPT" == /usr/bin/* ]]
+    then
+      sudo pacman -Rscn megasync-instances
+    else
+      rm "$PATH_TO_SCRIPT"
+    fi
   fi
 }
 
