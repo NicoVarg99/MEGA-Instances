@@ -240,11 +240,13 @@ uninstall() {
 
   if zenity --question --title="Deleting synced files" --text="Do you want to remove '$MEGADIR'?"
   then
+    debug "removing $MEGADIR"
     rm -rf "$MEGADIR"
   fi
 
   if zenity --question --title="Deleting script" --text="Do you want to delete the script, too?"
   then
+    debug "deleting script"
     if [[ "$PATH_TO_SCRIPT" == /usr/bin/* ]]
     then
       sudo pacman -Rscn megasync-instances
