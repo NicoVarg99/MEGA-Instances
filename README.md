@@ -23,10 +23,10 @@ Follow the below steps on any distro:
   chmod 755 megasync-instances
   ```
 
-- **either append it to your** `PATH` only
+- **either** place it in your personal `~/bin` folder
 
   ```bash
-  echo 'export PATH='"$PWD"'/megasync-instances:'"$PATH" >> ~/.bashrc
+  ./megasync-instances --install-for-me
   ```
 
 - **or expose it systemwide** for all users

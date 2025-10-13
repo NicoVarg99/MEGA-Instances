@@ -17,6 +17,8 @@ options:
   -a | --add-more               add more instances to an already configured path
   -t | --toggle-autostart       instances based on above --megadir location
   -k | --killall                instances based on above --megadir location
+  -i | --install-for-me         moves this script under ~/bin, creating and
+                                  prepending it to the PATH variable if necessary
   -u | --uninstall
 HELP
 )
@@ -37,6 +39,9 @@ main() {
   elif [ -v KILL_ALL ]
   then
     kill_all
+  elif [ -v INSTALL ]
+  then
+    install
   elif [ -v UNINSTALL ]
   then
     uninstall
@@ -76,6 +81,10 @@ parse_args() {
 
       (-k|--killall)
         KILL_ALL=1
+      ;;
+
+      (-i|--install-for-me)
+        INSTALL=1
       ;;
 
       (-u|--uninstall)
@@ -229,6 +238,20 @@ kill_all() {
       kill $pid &
     fi
   done
+}
+
+install() {
+  if [ ! -d ~/bin ]
+  then
+    mkdir -p ~/bin
+  fi
+
+  if ! echo ":$PATH:" | grep -q ":$HOME/bin:"
+  then
+    echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+  fi
+
+  mv "$PATH_TO_SCRIPT" ~/bin/
 }
 
 uninstall() {
