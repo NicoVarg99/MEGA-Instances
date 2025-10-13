@@ -3,7 +3,6 @@
 #Some useful variables
 REALHOME=$HOME
 MEGADIR="$REALHOME/MEGA-Instances"
-DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
 PATH_TO_SCRIPT="$(readlink -f "$0")"
 VERSION="0.0.1"
 
@@ -90,29 +89,38 @@ check_deps () {
   fi
 }
 
+get_depath() {
+  local depath="$REALHOME/.config/autostart/mega_instances_at${MEGADIR////_}.desktop"
+
+  printf "$depath"
+}
+
 #Function that creates a Desktop Entry and sets it up for autostart at the login
 add_desktop_entry () {
+  local depath="$(get_depath)"
   mkdir -p $REALHOME/.config/autostart
 
-  cat <<ENTRY > "$DEPATH"
+  cat <<ENTRY > "$depath"
 [Desktop Entry]
 Type=Application
-Exec=$PATH_TO_SCRIPT
+Exec=$PATH_TO_SCRIPT --megadir "$MEGADIR"
 Name=megasync_instances
-Comment=Open all your MEGA instances
+Comment=Open all your MEGA instances configured at "$MEGADIR"
 ENTRY
 
-  chmod +x $DEPATH
-  echo "created $DEPATH"
+  chmod +x $depath
+  echo "created $depath"
 }
 
 rm_desktop_entry() {
-  rm "$DEPATH"
-  echo "deleted $DEPATH"
+  local depath="$(get_depath)"
+  rm "$depath"
+  echo "deleted $depath"
 }
 
 toggle_autostart() {
-  if [ -f "$DEPATH" ]
+  local depath="$(get_depath)"
+  if [ -f "$depath" ]
   then
     rm_desktop_entry
   else
