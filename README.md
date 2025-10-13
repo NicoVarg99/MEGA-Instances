@@ -23,13 +23,13 @@ Follow the below steps on any distro:
   chmod 755 megasync-instances
   ```
 
-- [ ] **either append it to your** `PATH` only
+- **either append it to your** `PATH` only
 
   ```bash
   echo 'export PATH='"$PWD"'/megasync-instances:'"$PATH" >> ~/.bashrc
   ```
 
-- [ ] **or expose it systemwide** for all users
+- **or expose it systemwide** for all users
   ```bash
   sudo mv megasync-instances /usr/local/bin/
   ```
