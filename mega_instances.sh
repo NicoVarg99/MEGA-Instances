@@ -65,7 +65,7 @@ options:
                                   defaults to ~/MEGA-Instances
 
   -a | --add-more               add more instances to an already configured path
-  -t | --toggle-autostart
+  -t | --toggle-autostart       instances based on above --megadir location
   -k | --killall                instances based on above --megadir location
   -u | --uninstall
 HELP
