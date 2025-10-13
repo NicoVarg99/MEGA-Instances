@@ -60,6 +60,7 @@ usage: $(basename $0) [options]
 
 options:
   -h | --help
+  -v | --verbose                print additional info to the terminal
   -m | --megadir PATH_TO_DIR    overrides path to instances
                                   defaults to ~/MEGA-Instances
 
