@@ -21,6 +21,33 @@ options:
 HELP
 )
 
+main() {
+  check_deps zenity megasync
+  parse_args $@
+
+  if [ -v SHOW_HELP ]
+  then
+    echo "$HELP_MENU"
+  elif [ -v ADD_MORE_INSTANCES ]
+  then
+    add_instances
+  elif [ -v TOGGLE_AUTOSTART ]
+  then
+    toggle_autostart
+  elif [ -v KILL_ALL ]
+  then
+    kill_all
+  elif [ -v UNINSTALL ]
+  then
+    uninstall
+  elif [ -f "$MEGADIR/.configured" ]
+  then
+    launch_instances
+  else
+    configure_instances
+  fi
+}
+
 parse_args() {
   local -a unknown_flags
   while [ $# -gt 0 ]
@@ -228,27 +255,4 @@ uninstall() {
   fi
 }
 
-check_deps zenity megasync
-parse_args $@
-
-if [ -v SHOW_HELP ]
-then
-  echo "$HELP_MENU"
-elif [ -v ADD_MORE_INSTANCES ]
-then
-  add_instances
-elif [ -v TOGGLE_AUTOSTART ]
-then
-  toggle_autostart
-elif [ -v KILL_ALL ]
-then
-  kill_all
-elif [ -v UNINSTALL ]
-then
-  uninstall
-elif [ -f "$MEGADIR/.configured" ]
-then
-  launch_instances
-else
-  configure_instances
-fi
+main $@
