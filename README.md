@@ -14,16 +14,30 @@ Dependencies:
 
 ## Installation
 
-```bash
-sudo wget -O /usr/local/bin/megasync-instances https://raw.githubusercontent.com/NicoVarg99/MEGA-Instances/master/mega_instances.sh
-sudo chmod 755 /usr/local/bin/megasync-instances
-megasync-instances
-```
+Follow the below steps on any distro:
+
+- download the script from GitHub and make it executable
+
+  ```bash
+  curl -o megasync-instances https://raw.githubusercontent.com/NicoVarg99/MEGA-Instances/master/mega_instances.sh
+  chmod 755 megasync-instances
+  ```
+
+- [ ] **either append it to your** `PATH` only
+
+  ```bash
+  echo 'export PATH='"$PWD"'/megasync-instances:'"$PATH" >> ~/.bashrc
+  ```
+
+- [ ] **or expose it systemwide** for all users
+  ```bash
+  sudo mv megasync-instances /usr/local/bin/
+  ```
 
 Arch Linux users can install the package directly from AUR ([megasync-instances](https://aur.archlinux.org/packages/megasync-instances))
 
 ## Uninstallation
 
 ```bash
-sudo megasync-instances --uninstall
+megasync-instances --uninstall
 ```
