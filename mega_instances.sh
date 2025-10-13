@@ -1,8 +1,7 @@
 #!/bin/bash
 
 #Some useful variables
-REALHOME=$HOME
-MEGADIR="$REALHOME/MEGA-Instances"
+MEGADIR="$HOME/MEGA-Instances"
 PATH_TO_SCRIPT="$(readlink -f "$0")"
 VERSION="0.0.1"
 
@@ -101,15 +100,14 @@ check_deps () {
 }
 
 get_depath() {
-  local depath="$REALHOME/.config/autostart/mega_instances_at${MEGADIR////_}.desktop"
-
+  local depath="$HOME/.config/autostart/mega_instances_at${MEGADIR////_}.desktop"
   printf "$depath"
 }
 
 #Function that creates a Desktop Entry and sets it up for autostart at the login
 add_desktop_entry () {
   local depath="$(get_depath)"
-  mkdir -p $REALHOME/.config/autostart
+  mkdir -p "$HOME/.config/autostart"
 
   cat <<ENTRY > "$depath"
 [Desktop Entry]
@@ -228,7 +226,6 @@ uninstall() {
 }
 
 check_deps zenity megasync
-debug "REALHOME = $REALHOME"
 parse_args $@
 
 if [ -v SHOW_HELP ]
