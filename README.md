@@ -25,5 +25,5 @@ Arch Linux users can install the package directly from AUR ([megasync-instances]
 ## Uninstallation
 
 ```bash
-megasync-instances --uninstall
+sudo megasync-instances --uninstall
 ```
