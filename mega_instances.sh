@@ -133,10 +133,9 @@ get_depath() {
 
 #Function that creates a Desktop Entry and sets it up for autostart at the login
 add_desktop_entry () {
-  local depath="$(get_depath)"
   mkdir -p "$HOME/.config/autostart"
 
-  cat <<ENTRY > "$depath"
+  cat <<ENTRY > "$1"
 [Desktop Entry]
 Type=Application
 Exec=$PATH_TO_SCRIPT --megadir "$MEGADIR"
@@ -144,23 +143,22 @@ Name=megasync_instances
 Comment=Open all your MEGA instances configured at "$MEGADIR"
 ENTRY
 
-  chmod +x $depath
-  echo "created $depath"
+  chmod +x $1
+  echo "created $1"
 }
 
 rm_desktop_entry() {
-  local depath="$(get_depath)"
-  rm "$depath"
-  echo "deleted $depath"
+  rm "$1"
+  echo "deleted $1"
 }
 
 toggle_autostart() {
   local depath="$(get_depath)"
   if [ -f "$depath" ]
   then
-    rm_desktop_entry
+    rm_desktop_entry "$depath"
   else
-    add_desktop_entry
+    add_desktop_entry "$depath"
   fi
 }
 
@@ -171,7 +169,7 @@ configure_instances () {
 
   if zenity --question --text="Launching all instances. Do you want to also autostart them?"
   then
-    add_desktop_entry
+    add_desktop_entry $(get_depath)
   fi
 
   touch "$MEGADIR/.configured"
@@ -234,7 +232,11 @@ kill_all() {
 }
 
 uninstall() {
-  rm_desktop_entry
+  local depath="$(get_depath)"
+  if [ -f "$depath" ]
+  then
+    rm_desktop_entry "$depath"
+  fi
 
   if zenity --question --title="Deleting synced files" --text="Do you want to remove '$MEGADIR'?"
   then
