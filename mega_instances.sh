@@ -5,6 +5,22 @@ MEGADIR="$HOME/MEGA-Instances"
 PATH_TO_SCRIPT="$(readlink -f "$0")"
 VERSION="0.0.1"
 
+HELP_MENU=$(cat <<HELP
+usage: $(basename $0) [options]
+
+options:
+  -h | --help
+  -v | --verbose                print additional info to the terminal
+  -m | --megadir PATH_TO_DIR    overrides path to instances
+                                  defaults to ~/MEGA-Instances
+
+  -a | --add-more               add more instances to an already configured path
+  -t | --toggle-autostart       instances based on above --megadir location
+  -k | --killall                instances based on above --megadir location
+  -u | --uninstall
+HELP
+)
+
 parse_args() {
   local -a unknown_flags
   while [ $# -gt 0 ]
@@ -52,23 +68,6 @@ parse_args() {
     echo "UNKNOWN FLAGS: ${unknown_flags[@]}"
     exit 1
   fi
-}
-
-show_help() {
-  cat <<HELP
-usage: $(basename $0) [options]
-
-options:
-  -h | --help
-  -v | --verbose                print additional info to the terminal
-  -m | --megadir PATH_TO_DIR    overrides path to instances
-                                  defaults to ~/MEGA-Instances
-
-  -a | --add-more               add more instances to an already configured path
-  -t | --toggle-autostart       instances based on above --megadir location
-  -k | --killall                instances based on above --megadir location
-  -u | --uninstall
-HELP
 }
 
 debug() {
@@ -234,7 +233,7 @@ parse_args $@
 
 if [ -v SHOW_HELP ]
 then
-  show_help
+  echo "$HELP_MENU"
 elif [ -v ADD_MORE_INSTANCES ]
 then
   add_instances
