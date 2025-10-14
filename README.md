@@ -63,6 +63,8 @@ INST_VAR_1="present only in instance-1"
 INST_VAR_ALL="present in all instances"
 ```
 
+In addition to the above, invoke `megasync-instances --help` for all implemented features.
+
 ## Uninstallation
 
 ```bash
