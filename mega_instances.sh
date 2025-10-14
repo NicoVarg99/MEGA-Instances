@@ -136,8 +136,7 @@ check_deps () {
 }
 
 get_depath() {
-  local depath="$HOME/.config/autostart/mega_instances_at${MEGADIR////_}.desktop"
-  printf "$depath"
+  printf "$HOME/.config/autostart/mega_instances_at${MEGADIR////_}.desktop"
 }
 
 #Function that creates a Desktop Entry and sets it up for autostart at the login
@@ -162,7 +161,7 @@ rm_desktop_entry() {
 }
 
 toggle_autostart() {
-  local depath="$(get_depath)"
+  local depath=$(get_depath)
   if [ -f "$depath" ]
   then
     rm_desktop_entry "$depath"
@@ -258,7 +257,7 @@ install() {
 }
 
 uninstall() {
-  local depath="$(get_depath)"
+  local depath=$(get_depath)
   if [ -f "$depath" ]
   then
     rm_desktop_entry "$depath"
