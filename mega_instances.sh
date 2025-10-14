@@ -123,12 +123,12 @@ check_deps () {
     if ! which $1 >/dev/null 2>&1
     then
       >&2 echo "Dependency '$1' seems to be missing"
-      local ERR=1
+      local err=1
     fi
     shift
   done
 
-  if [ -v ERR ]
+  if [ -v err ]
   then
     >&2 echo "Error: Install all required dependencies before running MEGA-Instances"
     exit 1
@@ -184,51 +184,52 @@ configure_instances () {
 }
 
 add_instances() {
-  local INST_NUM=$(($(find "$MEGADIR" -mindepth 1 -maxdepth 1 -type d | wc -l) + 1))
-  local INST INST_DIR NAME
   debug "Adding instances..."
+
+  local inst_num=$(($(find "$MEGADIR" -mindepth 1 -maxdepth 1 -type d | wc -l) + 1))
+  local inst inst_dir name
 
   while true
   do
-    INST="instance-${INST_NUM}"
-    NAME="$(zenity --title="Add new instance" \
-      --entry --entry-text="$INST" \
+    inst="instance-${inst_num}"
+    name="$(zenity --title="Add new instance" \
+      --entry --entry-text="$inst" \
       --text="Set the name of instance, then configure and close it.")"
 
-    if [ -z "$NAME" ]
+    if [ -z "$name" ]
     then
-      NAME="$INST"
+      name="$inst"
     fi
-    INST_DIR="$MEGADIR/$NAME"
+    inst_dir="$MEGADIR/$name"
 
-    if [ -d "$INST_DIR" ]
+    if [ -d "$inst_dir" ]
     then
-      zenity --error --title="name collision" --text="$NAME already exists in $MEGADIR, pick another name!"
+      zenity --error --title="name collision" --text="$name already exists in $MEGADIR, pick another name!"
       continue
     fi
 
-    debug "Creating $INST_DIR"
-    mkdir -p "$INST_DIR"
+    debug "Creating $inst_dir"
+    mkdir -p "$inst_dir"
 
-    HOME="$INST_DIR" megasync 2> /dev/null &
+    HOME="$inst_dir" megasync 2> /dev/null &
 
     if ! zenity --question --text="Do you need another instance?"
     then
       break
     fi
-    ((INST_NUM++))
+    ((inst_num++))
   done
 }
 
 launch_instances () {
   debug "$MEGADIR seems to be populated already, launching all instances."
-  local instance
 
   if [ -f "$MEGADIR/.env" ]
   then
     source "$MEGADIR/.env"
   fi
 
+  local instance
   for instance in "$MEGADIR"/*/
   do
     (
@@ -244,6 +245,9 @@ launch_instances () {
 }
 
 kill_all() {
+  debug "Killing all instances of $MEGADIR"
+
+  local pid
   for pid in $(pgrep megasync); do
     if tr '\0' '\n' < /proc/$pid/environ | grep -q "HOME=$MEGADIR/"; then
       kill $pid &
@@ -252,6 +256,8 @@ kill_all() {
 }
 
 install() {
+  debug "Installing script under ~/bin"
+
   if [ ! -d ~/bin ]
   then
     mkdir -p ~/bin
