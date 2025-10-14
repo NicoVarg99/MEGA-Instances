@@ -47,7 +47,7 @@ The below 2 `.env` files
 export INST_VAR_ALL="present in all instances"
 
 # ~/MEGA-Instances/instance-1/.env:
-export INST_VAR1="present only in instance-1"
+export INST_VAR_1="present only in instance-1"
 
 # ~/MEGA-Instances/instance-2/.env does not exist
 ```
@@ -57,7 +57,7 @@ result in
 ```bash
 # instance-1 having access to:
 INST_VAR_ALL="present in all instances"
-INST_VAR1="present only in instance-1"
+INST_VAR_1="present only in instance-1"
 
 # instance-2 having access to:
 INST_VAR_ALL="present in all instances"
