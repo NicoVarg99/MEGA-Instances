@@ -224,6 +224,11 @@ launch_instances () {
   debug "$MEGADIR seems to be populated already, launching all instances."
   local instance
 
+  if [ -f "$MEGADIR/.env" ]
+  then
+    source "$MEGADIR/.env"
+  fi
+
   for instance in "$MEGADIR"/*/
   do
     (
