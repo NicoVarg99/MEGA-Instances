@@ -222,21 +222,25 @@ add_instances() {
 
 launch_instances () {
   debug "$MEGADIR seems to be populated already, launching all instances."
-  for d in $MEGADIR/*/
-  do
-    if [ -f "$d/.env" ]
-    then
-      source "$d/.env"
-    fi
+  local instance
 
-    debug "Launching $d"
-    HOME="$d" megasync 2> /dev/null &
+  for instance in "$MEGADIR"/*/
+  do
+    (
+      if [ -f "$instance.env" ]
+      then
+        source "$instance.env"
+      fi
+
+      debug "Launching $instance"
+      HOME="$instance" megasync 2> /dev/null &
+    )
   done
 }
 
 kill_all() {
   for pid in $(pgrep megasync); do
-    if tr '\0' '\n' < /proc/$pid/environ | grep -q 'HOME='"$MEGADIR"'/'; then
+    if tr '\0' '\n' < /proc/$pid/environ | grep -q "HOME=$MEGADIR/"; then
       kill $pid &
     fi
   done
