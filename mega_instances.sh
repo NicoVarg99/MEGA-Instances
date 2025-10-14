@@ -225,6 +225,11 @@ launch_instances () {
   debug "$MEGADIR seems to be populated already, launching all instances."
   for d in $MEGADIR/*/
   do
+    if [ -f "$d/.env" ]
+    then
+      source "$d/.env"
+    fi
+
     debug "Launching $d"
     HOME="$d" megasync 2> /dev/null &
   done
