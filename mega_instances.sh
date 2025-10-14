@@ -25,7 +25,7 @@ HELP
 
 main() {
   check_deps zenity megasync
-  parse_args $@
+  parse_args "$@"
 
   if [ -v SHOW_HELP ]
   then
@@ -57,7 +57,7 @@ parse_args() {
   local -a unknown_flags
   while [ $# -gt 0 ]
   do
-    case $1 in
+    case "$1" in
       (-h|--help)
         SHOW_HELP=1
       ;;
@@ -284,4 +284,4 @@ uninstall() {
   fi
 }
 
-main $@
+main "$@"
