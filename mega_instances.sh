@@ -176,14 +176,12 @@ configure_instances () {
 
   add_instances
 
-  if zenity --question --text="Launching all instances. Do you want to also autostart them?"
+  if zenity --question --text="Do you want to autostart these instances?"
   then
     add_desktop_entry $(get_depath)
   fi
 
   touch "$MEGADIR/.configured"
-
-  launch_instances
 }
 
 add_instances() {
@@ -213,7 +211,7 @@ add_instances() {
     debug "Creating $INST_DIR"
     mkdir -p "$INST_DIR"
 
-    HOME="$INST_DIR" megasync
+    HOME="$INST_DIR" megasync 2> /dev/null &
 
     if ! zenity --question --text="Do you need another instance?"
     then
