@@ -1,107 +1,430 @@
 #!/bin/bash
 
-#Some useful variables
-REALHOME=$HOME
+# ============================================================
+#  MEGA-Instances v2.1 — Multi-instance MEGAsync for Linux
+#  https://github.com/NicoVarg99/MEGA-Instances
+#
+#  Runs multiple MEGAsync instances side-by-side, each with
+#  its own HOME/XDG environment so accounts don't conflict.
+#
+#  Auto-detects your init system:
+#    systemd  → per-instance systemd user services (KDE 6,
+#               GNOME, etc.) — survives cold boots reliably.
+#    non-systemd  → wrapper script + .desktop autostart
+#               (Devuan, Alpine, Gentoo/OpenRC, Artix, Void…)
+# ============================================================
+
+# ── Configuration ───────────────────────────────────────────
+VERSION="2.1"
+REALHOME="$HOME"
 MEGADIR="MEGA"
-FILEPATH=$REALHOME/.config/megasync-instances
-FILE=$FILEPATH/status
+STATUS_DIR="$REALHOME/.config/megasync-instances"
+STATUS_FILE="$STATUS_DIR/status"
+SYSTEMD_USER_DIR="$REALHOME/.config/systemd/user"
 ERR=0
-VERSION="0.0.1"
-echo "REALHOME = $REALHOME"
 
-zenity () {
-  /usr/bin/zenity "$@" 2>/dev/null
+# ── Detect init system ─────────────────────────────────────
+# systemd is available when systemctl --user actually works
+if command -v systemctl &>/dev/null && systemctl --user &>/dev/null 2>&1; then
+    HAS_SYSTEMD=true
+else
+    HAS_SYSTEMD=false
+fi
+
+# ── Helpers ────────────────────────────────────────────────
+zenity() { /usr/bin/zenity "$@" 2>/dev/null; }
+
+checkDep() {
+    if ! command -v "$1" &>/dev/null; then
+        echo >&2 "Dependency '$1' seems to be missing"
+        ERR=1
+    fi
 }
 
-checkDep () {
-  if [[ `whereis $1` == "$1:" ]];
-  then
-    >&2 echo "Dependency '$1' seems to be missing"
-    ERR=1
-  fi
+log() {
+    echo "[MEGA-Instances] $*"
 }
 
-#Function that creates a Desktop Entry and sets it up for autostart at the login
-generateDesktopEntry () {
-  DEPATH=$REALHOME/.config/autostart/mega_instances.desktop
-	mkdir -p /home/$USER/.config/autostart
-	echo "[Desktop Entry]" > $DEPATH
-	echo "Type=Application" >> $DEPATH
-	echo "Exec=/usr/bin/megasync-instances" >> $DEPATH
-	echo "Name=megasync_instances" >> $DEPATH
-	echo "Comment=Open all your MEGA instances"  >> $DEPATH
-	chmod +x $DEPATH
+# ── Link KDE theme so dialogs look right ───────────────────
+linkKdeGlobals() {
+    local fake_home="$1"
+    mkdir -p "$fake_home/.config"
+    if [ ! -f "$fake_home/.config/kdeglobals" ]; then
+        ln -sf "$REALHOME/.config/kdeglobals" "$fake_home/.config/kdeglobals" 2>/dev/null || true
+    fi
 }
 
-finstall () {
-  checkDep "zenity"
-  checkDep "megasync"
-
-	if [[ $ERR -ne 0 ]]; then
-		>&2 echo "Error: Install all required dependencies before running MEGA-Instances"
-		exit 1
-	fi
-
-	frun
+# ── Launch one instance with isolated environment ──────────
+launchInstance() {
+    local fake_home="$1"
+    HOME="$fake_home" \
+    XDG_DATA_HOME="$fake_home/.local/share" \
+    XDG_CONFIG_HOME="$fake_home/.config" \
+    XDG_CACHE_HOME="$fake_home/.cache" \
+    /usr/bin/megasync "$@"
 }
 
-frun () {
-	if [ $(cat $FILE) == "1" ];
-	then
-		echo "MEGA-Instances is already configured, launching the instances..."
-    echo "If you wish to run the first configuration again, manually remove $FILE"
+# ── systemd methods ────────────────────────────────────────
 
-    killall megasync 2> /dev/null #Close open megasync instances
+generateService() {
+    local name="$1"
+    local prev_name="$2"          # empty for the first instance
+    local index="$3"              # 1-based index for staggering
+    local home_dir="$REALHOME/$MEGADIR/$name"
+    local unit_name="megasync-${name}.service"
+    local file="$SYSTEMD_USER_DIR/$unit_name"
+    local after="After=graphical-session.target network-online.target"
+    local sleep_sec=$(( index * 2 ))
 
-		for d in $REALHOME/$MEGADIR/*/ ; do
-			echo "Launching $d"
-			HOME=$d
-			megasync 2> /dev/null &
-		done
+    [ -n "$prev_name" ] && after="$after megasync-${prev_name}.service"
 
-	else
-	  	echo "MEGA-Instances is not configured. Will now start the configuration."
+    mkdir -p "$SYSTEMD_USER_DIR"
 
-      if zenity --question --text=zenity --question --no-wrap --text="This is the first time you are running MEGA-Instances.\nIn order to continue we must delete your existing MEGA instance.\nPress Yes to continue, No to abort."; then
-          killall megasync 2> /dev/null #Close open megasync instances
-          rm -rf ~/MEGA
-          rm -f ~/.config/autostart/megasync.desktop
-      else
-          exit
-      fi
+    cat > "$file" << SERVICEEOF
+[Unit]
+Description=MEGAsync Instance - ${name}
+Documentation=https://github.com/NicoVarg99/MEGA-Instances
+PartOf=graphical-session.target
+${after}
 
-			INSTNUM=`zenity --entry --text="How many MEGA instances do you need?"`
-			mkdir -p $REALHOME/$MEGADIR
+[Service]
+Type=simple
+ExecStartPre=/bin/sleep ${sleep_sec}
+ExecStart=/usr/bin/megasync
+Environment=HOME=${home_dir}
+Environment=XDG_DATA_HOME=${home_dir}/.local/share
+Environment=XDG_CONFIG_HOME=${home_dir}/.config
+Environment=XDG_CACHE_HOME=${home_dir}/.cache
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=10
 
-			for (( i=1; i<=INSTNUM; i++ ))
-			do
-				NAME=`zenity --entry --text="Insert the name for instance $i/$INSTNUM"`
-				ARRAY[$i]=$NAME
-				mkdir -p $REALHOME/$MEGADIR/$NAME
-			done
+[Install]
+WantedBy=graphical-session.target
+SERVICEEOF
 
-			for (( i=1; i<=INSTNUM; i++ ))
-			do
-				zenity --warning --text="Instance ${ARRAY[i]} ($i/$INSTNUM). Close it after the configuration."
-				HOME=$REALHOME/$MEGADIR/${ARRAY[$i]}
-				megasync
-			done
-
-			generateDesktopEntry
-
-			zenity --warning --text="Will now launch all the instances. They will also start at every startup."
-			HOME=$REALHOME
-			echo 1 > $FILE #Mark as configured
-			bash $0 &
-      sleep 1
-	fi
+    chmod 644 "$file"
+    log "Generated systemd service: $unit_name"
 }
 
-#Create config file if missing
-if [ ! -f $FILE ] ;
-then
-  mkdir -p $FILEPATH
-  echo 0 > $FILE
+cleanOldAutostart() {
+    local old_desktop="$REALHOME/.config/autostart/mega_instances.desktop"
+    if [ -f "$old_desktop" ]; then
+        mv "$old_desktop" "${old_desktop}.bak" 2>/dev/null
+        log "Backed up old autostart .desktop file"
+    fi
+    # Disable old generated service if it exists
+    local gen_service="app-megasync\\x2dinstances@autostart.service"
+    if systemctl --user is-enabled "$gen_service" &>/dev/null; then
+        systemctl --user disable "$gen_service" 2>/dev/null || true
+        log "Disabled old generated systemd service"
+    fi
+}
+
+startAllSystemd() {
+    log "Starting all instances via systemd..."
+    for svc in "$SYSTEMD_USER_DIR"/megasync-*.service; do
+        [ -f "$svc" ] || continue
+        local name
+        name=$(basename "$svc" .service | sed 's/^megasync-//')
+        log "  Starting megasync-${name}.service..."
+        systemctl --user start "megasync-${name}.service" 2>/dev/null || {
+            log "  WARNING: Failed to start megasync-${name}.service"
+        }
+    done
+    log "Done. Instances will also start automatically at next login."
+}
+
+# ── Non-systemd methods (wrapper + .desktop) ───────────────
+
+generateWrapper() {
+    local wrapper_path="$REALHOME/.local/bin/megasync-instances-launcher.sh"
+    mkdir -p "$(dirname "$wrapper_path")"
+
+    cat > "$wrapper_path" << 'WRAPPEREOF'
+#!/bin/bash
+# Auto-generated by MEGA-Instances — launches all instances
+REALHOME="$HOME"
+MEGADIR="MEGA"
+for d in "$REALHOME/$MEGADIR"/*/; do
+    [ -d "$d" ] || continue
+    HOME="$d" \
+    XDG_DATA_HOME="$d/.local/share" \
+    XDG_CONFIG_HOME="$d/.config" \
+    XDG_CACHE_HOME="$d/.cache" \
+    /usr/bin/megasync 2>/dev/null &
+    sleep 3
+done
+WRAPPEREOF
+
+    chmod 755 "$wrapper_path"
+    log "Generated wrapper script: $wrapper_path"
+}
+
+generateDesktopEntry() {
+    local desktop_path="$REALHOME/.config/autostart/mega_instances.desktop"
+    mkdir -p "$(dirname "$desktop_path")"
+
+    cat > "$desktop_path" << DESKTOPEOF
+[Desktop Entry]
+Type=Application
+Exec=$REALHOME/.local/bin/megasync-instances-launcher.sh
+Name=megasync_instances
+Comment=Open all your MEGA instances
+DESKTOPEOF
+
+    chmod 755 "$desktop_path"
+    log "Generated autostart .desktop entry: $desktop_path"
+}
+
+startAllWrapper() {
+    local wrapper_path="$REALHOME/.local/bin/megasync-instances-launcher.sh"
+    if [ -x "$wrapper_path" ]; then
+        log "Starting all instances via wrapper script..."
+        bash "$wrapper_path"
+    else
+        log "ERROR: Wrapper script not found at $wrapper_path"
+        exit 1
+    fi
+}
+
+# ── Repair mode (detect & fix config issues) ──────────────
+frepair() {
+    log "Repair mode — scanning instance configs..."
+    local fixed=0
+    local found=0
+
+    for d in "$REALHOME/$MEGADIR"/*/; do
+        [ -d "$d" ] || continue
+        local cfg="$d/.local/share/data/Mega Limited/MEGAsync/MEGAsync.cfg"
+        [ -f "$cfg" ] || continue
+
+        local name
+        name=$(basename "$d")
+        log "  Checking $name..."
+
+        # Read config, identify account sub-sections (non-[General])
+        local sections=()
+        local current_section=""
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^\[([^\]]+)\]$ ]]; then
+                current_section="${BASH_REMATCH[1]}"
+                sections+=("$current_section")
+            fi
+        done < "$cfg"
+
+        # Find account sub-sections (anything other than General)
+        local account_sections=()
+        for s in "${sections[@]}"; do
+            [ "$s" = "General" ] && continue
+            account_sections+=("$s")
+        done
+
+        if [ ${#account_sections[@]} -le 1 ]; then
+            log "    OK (${#account_sections[@]} account section(s))"
+            continue
+        fi
+
+        # Multiple account sections — find which one has a session key
+        local session_section=""
+        local ghost_sections=()
+        for s in "${account_sections[@]}"; do
+            # Read keys in this section to find a session (40-char hex key)
+            local in_section=false
+            local has_session=false
+            while IFS= read -r line; do
+                if [[ "$line" =~ ^\[$s\]$ ]]; then
+                    in_section=true
+                    continue
+                fi
+                if $in_section && [[ "$line" =~ ^\[ ]]; then
+                    break
+                fi
+                if $in_section && [[ "$line" =~ ^[a-f0-9]{40}= ]]; then
+                    # 40-char hex key with a non-empty value = likely session
+                    local val
+                    val=$(echo "$line" | cut -d= -f2-)
+                    [ -n "$val" ] && has_session=true
+                fi
+            done < "$cfg"
+            if $has_session; then
+                session_section="$s"
+            else
+                ghost_sections+=("$s")
+            fi
+        done
+
+        if [ ${#ghost_sections[@]} -eq 0 ]; then
+            log "    Multiple sections but all have sessions — skipping"
+            continue
+        fi
+
+        found=$((found + 1))
+        log "    Found ${#ghost_sections[@]} ghost section(s) without session keys"
+
+        # Remove ghost sections
+        local tmp="${cfg}.repair"
+        local in_ghost=false
+        while IFS= read -r line; do
+            local stripped
+            stripped=$(echo "$line" | sed 's/^[[:space:]]*//')
+            if [[ "$stripped" =~ ^\[([^\]]+)\]$ ]]; then
+                local sec_name="${BASH_REMATCH[1]}"
+                in_ghost=false
+                for g in "${ghost_sections[@]}"; do
+                    [ "$sec_name" = "$g" ] && in_ghost=true && break
+                done
+            fi
+            if ! $in_ghost; then
+                echo "$line" >> "$tmp"
+            fi
+        done < "$cfg"
+
+        mv "$tmp" "$cfg"
+        fixed=$((fixed + 1))
+        log "    ✓ Repaired: removed ${#ghost_sections[@]} ghost section(s) from $name"
+    done
+
+    if [ $found -eq 0 ]; then
+        log "All instances look clean — no duplicate account sections found."
+    else
+        log "Repaired $fixed instance(s). Run again to verify."
+    fi
+}
+
+# ── First-time configuration ──────────────────────────────
+finstall() {
+    checkDep zenity
+    checkDep megasync
+
+    if [ $ERR -ne 0 ]; then
+        echo >&2 "Error: Install all required dependencies before running MEGA-Instances"
+        exit 1
+    fi
+
+    if $HAS_SYSTEMD; then
+        log "Detected systemd — will use per-instance systemd services"
+    else
+        log "No systemd detected — will use wrapper script + .desktop autostart"
+    fi
+
+    frun
+}
+
+frun() {
+    if [ -f "$STATUS_FILE" ] && [ "$(cat "$STATUS_FILE")" = "1" ]; then
+        # ── Already configured — launch ─────────────────────
+        log "MEGA-Instances is already configured."
+
+        if $HAS_SYSTEMD; then
+            startAllSystemd
+        else
+            startAllWrapper
+        fi
+
+    else
+        # ── First-time setup ───────────────────────────────
+        log "MEGA-Instances is not configured. Starting setup..."
+
+        if ! zenity --question --no-wrap \
+            --text="This is the first time you are running MEGA-Instances.\n\nIn order to continue we must delete your existing MEGA instance.\nPress Yes to continue, No to abort."; then
+            exit
+        fi
+
+        # Remove old single-instance data
+        killall megasync 2>/dev/null
+        rm -rf "$REALHOME/$MEGADIR"
+        rm -f "$REALHOME/.config/autostart/megasync.desktop"
+
+        # Ask how many instances
+        INSTNUM=$(zenity --entry --text="How many MEGA instances do you need?")
+        [ -z "$INSTNUM" ] && exit
+        mkdir -p "$REALHOME/$MEGADIR"
+
+        # Collect instance names
+        ARRAY=()
+        for (( i=1; i<=INSTNUM; i++ )); do
+            NAME=$(zenity --entry --text="Insert the name for instance $i/$INSTNUM")
+            [ -z "$NAME" ] && exit
+            ARRAY+=("$NAME")
+            mkdir -p "$REALHOME/$MEGADIR/$NAME"
+        done
+
+        # Launch each instance for initial login (one at a time)
+        for (( i=0; i<INSTNUM; i++ )); do
+            local name="${ARRAY[$i]}"
+            local fake_home="$REALHOME/$MEGADIR/$name"
+
+            # Prepare directories
+            mkdir -p "$fake_home/.config"
+            mkdir -p "$fake_home/.local/share/data/Mega Limited/MEGAsync"
+            mkdir -p "$fake_home/.cache"
+            linkKdeGlobals "$fake_home"
+
+            zenity --warning \
+                --text="Instance ${name} ($((i+1))/$INSTNUM).\n\nLog in and then CLOSE the MEGAsync window.\nDo NOT just close to tray — quit the application."
+
+            launchInstance "$fake_home"
+        done
+
+        # Generate autostart mechanism
+        if $HAS_SYSTEMD; then
+            # Generate and enable systemd services (chained in entry order)
+            prev_name=""
+            for (( idx=0; idx<INSTNUM; idx++ )); do
+                local name="${ARRAY[$idx]}"
+                generateService "$name" "$prev_name" $(( idx + 1 ))
+                prev_name="$name"
+            done
+            systemctl --user daemon-reload
+            for name in "${ARRAY[@]}"; do
+                systemctl --user enable "megasync-${name}.service"
+                log "Enabled megasync-${name}.service for autostart"
+            done
+            cleanOldAutostart
+        else
+            # Generate wrapper script + .desktop entry
+            generateWrapper
+            generateDesktopEntry
+        fi
+
+        # Mark as configured
+        echo 1 > "$STATUS_FILE"
+
+        zenity --warning \
+            --text="Configuration complete!\n\nAll instances will now start.\nThey will also start automatically at every login."
+
+        # Launch all instances
+        frun
+    fi
+}
+
+# ── Entry point ───────────────────────────────────────────
+case "${1:-}" in
+    --repair|-r)
+        mkdir -p "$STATUS_DIR"
+        frepair
+        exit 0
+        ;;
+    --help|-h)
+        echo "MEGA-Instances v${VERSION}"
+        echo "Usage: $0 [--repair]"
+        echo ""
+        echo "  (no args)  Run setup or launch configured instances"
+        echo "  --repair   Scan configs for duplicate account entries and fix them"
+        echo "  --help     Show this help"
+        exit 0
+        ;;
+esac
+
+mkdir -p "$STATUS_DIR"
+
+if ! $HAS_SYSTEMD; then
+    mkdir -p "$SYSTEMD_USER_DIR"  # harmless even without systemd
+fi
+
+if [ ! -f "$STATUS_FILE" ]; then
+    echo 0 > "$STATUS_FILE"
 fi
 
 finstall
